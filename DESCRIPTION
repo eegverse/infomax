@@ -1,0 +1,16 @@
+Package: infomax
+Type: Package
+Title: Infomax Independent Component Analysis
+Version: 0.1.0
+Author: Who wrote it
+Maintainer: Matt Craddock <matt@mattcraddock.com>
+Description: Implements Infomax Independent Component Analysis (ICA)
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    whitening,
+    stats,
+    Matrix
+RoxygenNote: 7.1.1
+Roxygen: list(markdown = TRUE)
