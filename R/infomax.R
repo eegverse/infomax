@@ -29,21 +29,24 @@ run_infomax <- function(x,
                         whiten = c("ZCA",
                                    "PCA",
                                    "ZCA-cor",
-                                   "PCA-cor")) {
+                                   "PCA-cor",
+                                   "none",
+                                   "eeglab"),
+                        verbose = TRUE) {
 
+  x <- as.matrix(x)
   whiten <- match.arg(whiten,
-                      c("ZCA", "PCA", "ZCA-cor", "PCA-cor"))
+                      c("ZCA", "PCA",
+                        "ZCA-cor", "PCA-cor",
+                        "none", "eeglab"))
+
   if (is.null(pca)) {
     if (Matrix::rankMatrix(x) < ncol(x)) {
       stop("Matrix is not full rank.")
     }
   }
 
-  if (is.null(lrate)) {
-    lrate <- .00065/log(ncol(x))
-  }
-
-  # heuristic from EEGLAB
+  # heuristic from EEGLAB; mne uses floor(sqrt(n_samps / 3))
   if (is.null(blocksize)) {
     blocksize <-
       ceiling(min(5 * log(nrow(x)),
@@ -57,7 +60,9 @@ run_infomax <- function(x,
 
   # 2. perform pca if necessary
   if (!is.null(pca)) {
-    pca_decomp <- eigen(stats::cov(x))$vectors
+    pca_decomp <- eigen(stats::cov(x))
+    eigenvals <- pca_decomp$values
+    pca_decomp <- pca_decomp$vectors
     x_o <- x
     x <- x %*% pca_decomp[, 1:pca]
     pca_flag <- TRUE
@@ -67,26 +72,50 @@ run_infomax <- function(x,
     ncomp <- ncol(x)
   }
 
+  # use mne-python lrate heuristic - eeglab one sets it too small.
+  if (is.null(lrate)) {
+    lrate <- .01 / log(ncomp^2)
+  }
+
   # 3. perform whitening/sphering
-  white_cov <-
+  if (identical(whiten, "eeglab")) {
+    white_cov <- 2.0 * pracma::sqrtm(cov(x))$Binv
+    x_white <- t(tcrossprod(white_cov, x))
+  } else {
+    white_cov <-
       whitening::whiteningMatrix(stats::cov(as.matrix(x)),
-                               method = whiten)
-  x_white <- whitening::whiten(x,
-                               method = whiten)
+                                 method = whiten)
+    x_white <- whitening::whiten(x,
+                                 method = whiten)
+  }
+
+
+  # # #cov(x)
+
+  #
+
+
 
   # 4. Train ICA
-  unmix_mat <-
+  start_time <- proc.time()
+  rotation_mat <-
     ext_in(x_white,
            blocksize = blocksize,
            lrate = lrate,
            maxiter = maxiter,
            annealdeg = annealdeg,
            annealstep = anneal,
-           tol = tol)
+           tol = tol,
+           verbose = verbose)
 
-  mixing_mat <-
-    MASS::ginv(white_cov, tol = 0) %*% t(unmix_mat)
 
+   #unmix_mat <- sweep(unmix_mat, 2, sqrt(eigenvals[1:pca]), "/")
+   #mixing_mat <- MASS::ginv(unmix_mat)
+  unmix_mat <- crossprod(rotation_mat, white_cov)
+  mixing_mat <- MASS::ginv(unmix_mat, tol = 0)
+   # mixing_mat <-
+   #    MASS::ginv(white_cov, tol = 0) %*% t(unmix_mat)
+   #
   if (pca_flag) {
     mixing_mat <- pca_decomp[, 1:pca] %*% mixing_mat
   }
@@ -99,13 +128,20 @@ run_infomax <- function(x,
        index.return = TRUE)$ix
   mixing_mat <- mixing_mat[, vaf_order]
 
-  unmixing_mat <- MASS::ginv(mixing_mat, tol = 0)
+  unmixing_mat <- t(MASS::ginv(mixing_mat, tol = 0))
+
   if (pca_flag) {
-    x <- x_o
+     x <- x_o
   }
-  S <- tcrossprod(unmixing_mat,
-                  as.matrix(x))
-  S <- as.data.frame(t(S))
+
+  if (verbose) {
+    end_time <-  proc.time() - start_time
+    message(paste0("ICA running time: ",
+                   round(end_time[[3]], 3),
+                   " s"))
+  }
+
+  S <- as.data.frame(x %*% unmixing_mat)
   names(S) <- sprintf("Comp%03d", 1:ncol(S))
   list(M = mixing_mat,
        W = unmixing_mat,
@@ -147,7 +183,7 @@ ext_in <- function(x,
   max_weight <- 1e8
 
   # blowup and restart
-  blowup_limit <- 1e4
+  blowup_limit <- 1e9
   blowup <- FALSE
   blowup_fac <- 0.8
   restart_fac <- .9
@@ -171,47 +207,47 @@ ext_in <- function(x,
 
   nblock <- n_samps %/% blocksize
   lastt <- (nblock - 1) * blocksize + 1
+  n_small_angle <- 20
+  count_small_angle <- 0
 
   while (iter < maxiter) {
     # shuffle timepoints
-    perms <- sample(1:nrow(x))
+    perms <- sample.int(nrow(x))
 
+    quick_time <- proc.time()
     for (t in seq(1, lastt, by = blocksize)) {
       this_set <- perms[t:(t + blocksize - 1)]
-      u <- x[this_set, ] %*% weights
+      #u <- x[this_set, ] %*% weights
+      u <- eigenMatMult(x[this_set, ], weights)
+      #u <- u + bias[, 1]
       u <- u + matrix(bias[, 1],
-                      blocksize,
-                      n_comps,
-                      byrow = TRUE)
+                       blocksize,
+                       n_comps,
+                       byrow = TRUE)
       y <- tanh(u)
-      new_weights <-
-        BI - crossprod(u, y) * matrix(signs,
-                                      nrow = n_comps,
-                                      ncol = n_comps,
-                                      byrow = TRUE) - crossprod(u)
 
-      weights <- weights + lrate * weights %*% new_weights
+      weights <- weights + lrate * weights %*% (BI - matrix(signs, n_comps, n_comps, byrow = TRUE) * crossprod(u, y) - crossprod(u))
 
       bias <- bias + lrate * colSums(y) * -2
 
       # check weights
       if (max(abs(weights)) > max_weight) {
         blowup <- TRUE
-        break
       }
 
-      blockno <- blockno + 1
       # kurtosis estimation
       if (extblocks > 0 & blockno %% extblocks == 0) {
         if (kurt_size < n_samps) {
-          test_act <- x[sample(nrow(x), kurt_size), ] %*% weights
+          test_act <- x[sample.int(nrow(x), kurt_size), ] %*% weights
         } else {
           test_act <- x %*% weights
         }
 
-        m4 <- colMeans(test_act * test_act * test_act * test_act)
-        m2 <- colMeans(test_act^2)^2
-        kurt <- m4 / m2 - 3
+        #m4 <- colMeans(test_act * test_act * test_act * test_act)
+        #m2 <- colMeans(test_act^2)^2
+        #kurt <- m4 / m2 - 3
+        kurt <- colMeans(test_act * test_act * test_act * test_act) / colMeans(test_act^2)^2
+        kurt <- kurt - 3
 
         if (extmomentum > 0) {
           kurt <- extmomentum * old_kurt + (1 - extmomentum) * kurt
@@ -225,6 +261,7 @@ ext_in <- function(x,
         } else {
           signcount <- 0
         }
+
         oldsigns <- signs
         signcounts <- c(signcounts,
                         signcount)
@@ -232,6 +269,10 @@ ext_in <- function(x,
           extblocks <- trunc(extblocks * signcount_step)
           signcount <- 0
         }
+      }
+      blockno <- blockno + 1
+      if (blowup) {
+        break
       }
     }
     if (!blowup) {
@@ -264,9 +305,17 @@ ext_in <- function(x,
         lrate <- lrate * annealstep
         olddelta <- delta
         oldchange <- change
-      } else if (iter == 1) {
-        olddelta <- delta
-        oldchange <- change
+      } else {
+        if (iter == 1) {
+          olddelta <- delta
+          oldchange <- change
+        }
+        if (n_small_angle > 0) {
+          count_small_angle <- count_small_angle + 1
+          if (count_small_angle > n_small_angle) {
+            maxiter <- iter
+          }
+        }
       }
 
       if (iter > 2 & change < w_change) {
@@ -293,6 +342,8 @@ ext_in <- function(x,
       signs[1] <- -1
       oldsigns <- numeric(n_comps)
     }
+    hej <- proc.time() - quick_time
+    cat(round(hej[[3]], 3))
   }
   weights
 }

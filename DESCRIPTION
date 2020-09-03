@@ -11,6 +11,11 @@ LazyData: true
 Imports: 
     whitening,
     stats,
-    Matrix
+    Matrix,
+    Rcpp
 RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE)
+LinkingTo: 
+    Rcpp,
+    RcppArmadillo,
+    RcppEigen

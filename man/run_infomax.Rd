@@ -16,7 +16,8 @@ run_infomax(
   kurtsize = 6000,
   maxiter = 200,
   extended = TRUE,
-  whiten = c("ZCA", "PCA", "ZCA-cor", "PCA-cor")
+  whiten = c("ZCA", "PCA", "ZCA-cor", "PCA-cor", "none", "eeglab"),
+  verbose = TRUE
 )
 }
 \arguments{
@@ -45,5 +46,5 @@ run_infomax(
 \item{whiten}{Whitening method to use}
 }
 \description{
-Run Infomax and extended-Infomax on a matrix of data.
+Run Infomax and extended-Infomax on a matrix of data. Mini-batch stochastic gradient descent algorithm.
 }
