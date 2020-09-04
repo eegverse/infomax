@@ -165,6 +165,7 @@ ext_in <- function(x,
   weights <- diag(n_comps)
   startweights <- weights
   oldweights <- weights
+  oldchange <- 0
 
   bias <- array(0,
                 dim = c(n_comps, 1))
@@ -209,6 +210,8 @@ ext_in <- function(x,
   lastt <- (nblock - 1) * blocksize + 1
   n_small_angle <- 20
   count_small_angle <- 0
+  sum_change <- 0
+  cum_delta <- 0
 
   while (iter < maxiter) {
     # shuffle timepoints
@@ -217,8 +220,8 @@ ext_in <- function(x,
     quick_time <- proc.time()
     for (t in seq(1, lastt, by = blocksize)) {
       this_set <- perms[t:(t + blocksize - 1)]
-      #u <- x[this_set, ] %*% weights
-      u <- eigenMatMult(x[this_set, ], weights)
+      u <- x[this_set, ] %*% weights
+      #u <- eigenMatMult(x[this_set, ], weights)
       #u <- u + bias[, 1]
       u <- u + matrix(bias[, 1],
                        blocksize,
@@ -281,6 +284,8 @@ ext_in <- function(x,
       angledelta <- 0
       delta <- as.numeric(wtchange)
       change <- sum(wtchange * wtchange)
+      #sum_change <- sum(cum_delta + wtchange * wtchange)
+      #sum_change <- (oldweights * .9 + (1-.9) * wtchange^2)
 
       if (iter > 2) {
         angledelta <- acos(sum(delta * olddelta) /
@@ -303,6 +308,7 @@ ext_in <- function(x,
 
       if (angledelta > annealdeg) {
         lrate <- lrate * annealstep
+        #lrate <- lrate / sqrt(sum_change + 1e-06)
         olddelta <- delta
         oldchange <- change
       } else {
@@ -310,12 +316,12 @@ ext_in <- function(x,
           olddelta <- delta
           oldchange <- change
         }
-        if (n_small_angle > 0) {
-          count_small_angle <- count_small_angle + 1
-          if (count_small_angle > n_small_angle) {
-            maxiter <- iter
-          }
-        }
+        # if (n_small_angle > 0) {
+        #   count_small_angle <- count_small_angle + 1
+        #   if (count_small_angle > n_small_angle) {
+        #     maxiter <- iter
+        #   }
+        # }
       }
 
       if (iter > 2 & change < w_change) {
@@ -323,6 +329,8 @@ ext_in <- function(x,
       } else if (change > blowup_limit) {
         lrate <- lrate * blowup_fac
       }
+
+      #cum_delta <- cum_delta + delta^2
     } else {
 
       iter <- 0
