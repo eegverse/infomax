@@ -44,6 +44,8 @@ run_infomax(
 \item{extended}{Run extended-Infomax}
 
 \item{whiten}{Whitening method to use}
+
+\item{verbose}{print informative messages}
 }
 \description{
 Run Infomax and extended-Infomax on a matrix of data. Mini-batch stochastic gradient descent algorithm.

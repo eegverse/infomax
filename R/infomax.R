@@ -14,6 +14,7 @@
 #' @param maxiter Maximum number of iterations
 #' @param extended Run extended-Infomax
 #' @param whiten Whitening method to use
+#' @param verbose print informative messages
 #' @export
 run_infomax <- function(x,
                         centre = TRUE,
@@ -108,14 +109,9 @@ run_infomax <- function(x,
            tol = tol,
            verbose = verbose)
 
-
-   #unmix_mat <- sweep(unmix_mat, 2, sqrt(eigenvals[1:pca]), "/")
-   #mixing_mat <- MASS::ginv(unmix_mat)
   unmix_mat <- crossprod(rotation_mat, white_cov)
   mixing_mat <- MASS::ginv(unmix_mat, tol = 0)
-   # mixing_mat <-
-   #    MASS::ginv(white_cov, tol = 0) %*% t(unmix_mat)
-   #
+
   if (pca_flag) {
     mixing_mat <- pca_decomp[, 1:pca] %*% mixing_mat
   }
@@ -216,13 +212,9 @@ ext_in <- function(x,
   while (iter < maxiter) {
     # shuffle timepoints
     perms <- sample.int(nrow(x))
-
-    quick_time <- proc.time()
     for (t in seq(1, lastt, by = blocksize)) {
       this_set <- perms[t:(t + blocksize - 1)]
       u <- x[this_set, ] %*% weights
-      #u <- eigenMatMult(x[this_set, ], weights)
-      #u <- u + bias[, 1]
       u <- u + matrix(bias[, 1],
                        blocksize,
                        n_comps,
@@ -246,9 +238,6 @@ ext_in <- function(x,
           test_act <- x %*% weights
         }
 
-        #m4 <- colMeans(test_act * test_act * test_act * test_act)
-        #m2 <- colMeans(test_act^2)^2
-        #kurt <- m4 / m2 - 3
         kurt <- colMeans(test_act * test_act * test_act * test_act) / colMeans(test_act^2)^2
         kurt <- kurt - 3
 
@@ -284,8 +273,6 @@ ext_in <- function(x,
       angledelta <- 0
       delta <- as.numeric(wtchange)
       change <- sum(wtchange * wtchange)
-      #sum_change <- sum(cum_delta + wtchange * wtchange)
-      #sum_change <- (oldweights * .9 + (1-.9) * wtchange^2)
 
       if (iter > 2) {
         angledelta <- acos(sum(delta * olddelta) /
@@ -308,7 +295,6 @@ ext_in <- function(x,
 
       if (angledelta > annealdeg) {
         lrate <- lrate * annealstep
-        #lrate <- lrate / sqrt(sum_change + 1e-06)
         olddelta <- delta
         oldchange <- change
       } else {
@@ -316,12 +302,12 @@ ext_in <- function(x,
           olddelta <- delta
           oldchange <- change
         }
-        # if (n_small_angle > 0) {
-        #   count_small_angle <- count_small_angle + 1
-        #   if (count_small_angle > n_small_angle) {
-        #     maxiter <- iter
-        #   }
-        # }
+        if (n_small_angle > 0) {
+           count_small_angle <- count_small_angle + 1
+           if (count_small_angle > n_small_angle) {
+             maxiter <- iter
+           }
+         }
       }
 
       if (iter > 2 & change < w_change) {
@@ -330,7 +316,6 @@ ext_in <- function(x,
         lrate <- lrate * blowup_fac
       }
 
-      #cum_delta <- cum_delta + delta^2
     } else {
 
       iter <- 0
@@ -350,8 +335,7 @@ ext_in <- function(x,
       signs[1] <- -1
       oldsigns <- numeric(n_comps)
     }
-    hej <- proc.time() - quick_time
-    cat(round(hej[[3]], 3))
+
   }
   weights
 }
