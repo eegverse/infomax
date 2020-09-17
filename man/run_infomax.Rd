@@ -16,24 +16,25 @@ run_infomax(
   kurtsize = 6000,
   maxiter = 200,
   extended = TRUE,
-  whiten = c("ZCA", "PCA", "ZCA-cor", "PCA-cor", "none", "eeglab"),
+  whiten = c("eeglab", "ZCA", "PCA", "ZCA-cor", "PCA-cor", "none"),
   verbose = TRUE
 )
 }
 \arguments{
 \item{x}{matrix of data; features in columns, samples in rows.}
 
-\item{centre}{mean-centre columns}
+\item{centre}{Mean-centre columns before running the algorithm.}
 
-\item{pca}{Use PCA dimensionality reduction}
+\item{pca}{Use PCA dimensionality reduction. Often helpful when the data is
+rank deficient.}
 
 \item{anneal}{Anneal rate at which learning rate reduced}
 
 \item{annealdeg}{Angle at which learning rate reduced}
 
-\item{tol}{Tolerance for convergence of ICA}
+\item{tol}{Tolerance for convergence of ICA. Defaults to 1e-07.}
 
-\item{lrate}{Initial learning rate}
+\item{lrate}{Initial learning rate.}
 
 \item{blocksize}{size of blocks of data used for learning}
 
@@ -47,6 +48,18 @@ run_infomax(
 
 \item{verbose}{print informative messages}
 }
+\value{
+A list containing: * S  Matrix of source estimates * M  Estimated
+mixing matrix * W  Estimated unmixing matrix * iter Number of iterations
+completed
+}
 \description{
-Run Infomax and extended-Infomax on a matrix of data. Mini-batch stochastic gradient descent algorithm.
+Run Infomax and extended-Infomax on a matrix of data. Mini-batch stochastic
+gradient descent algorithm.
+}
+\references{
+Bell, A.J., & Sejnowski, T.J. (1995). An information-maximization approach to blind separation and blind deconvolution. \emph{Neural Computation, 7,} 1129-159
+}
+\author{
+Matt Craddock \email{matt@mattcraddock.com}
 }

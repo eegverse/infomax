@@ -1,20 +1,27 @@
 #' Run Infomax ICA
 #'
-#' Run Infomax and extended-Infomax on a matrix of data. Mini-batch stochastic gradient descent algorithm.
+#' Run Infomax and extended-Infomax on a matrix of data. Mini-batch stochastic
+#' gradient descent algorithm.
 #'
 #' @param x matrix of data; features in columns, samples in rows.
-#' @param centre mean-centre columns
-#' @param pca Use PCA dimensionality reduction
+#' @param centre Mean-centre columns before running the algorithm.
+#' @param pca Use PCA dimensionality reduction. Often helpful when the data is
+#'   rank deficient.
 #' @param anneal Anneal rate at which learning rate reduced
 #' @param annealdeg Angle at which learning rate reduced
-#' @param tol Tolerance for convergence of ICA
-#' @param lrate Initial learning rate
+#' @param tol Tolerance for convergence of ICA. Defaults to 1e-07.
+#' @param lrate Initial learning rate.
 #' @param blocksize size of blocks of data used for learning
 #' @param kurtsize Size of blocks for kurtosis checking
 #' @param maxiter Maximum number of iterations
 #' @param extended Run extended-Infomax
 #' @param whiten Whitening method to use
 #' @param verbose print informative messages
+#' @author Matt Craddock \email{matt@@mattcraddock.com}
+#' @references Bell, A.J., & Sejnowski, T.J. (1995). An information-maximization approach to blind separation and blind deconvolution. *Neural Computation, 7,* 1129-159
+#' @return A list containing: * S  Matrix of source estimates * M  Estimated
+#'   mixing matrix * W  Estimated unmixing matrix * iter Number of iterations
+#'   completed
 #' @export
 run_infomax <- function(x,
                         centre = TRUE,
@@ -27,19 +34,22 @@ run_infomax <- function(x,
                         kurtsize = 6000,
                         maxiter = 200,
                         extended = TRUE,
-                        whiten = c("ZCA",
+                        whiten = c("eeglab",
+                                   "ZCA",
                                    "PCA",
                                    "ZCA-cor",
                                    "PCA-cor",
-                                   "none",
-                                   "eeglab"),
+                                   "none"),
                         verbose = TRUE) {
 
   x <- as.matrix(x)
   whiten <- match.arg(whiten,
-                      c("ZCA", "PCA",
-                        "ZCA-cor", "PCA-cor",
-                        "none", "eeglab"))
+                      c("eeglab",
+                        "ZCA",
+                        "PCA",
+                        "ZCA-cor",
+                        "PCA-cor",
+                        "none"))
 
   if (is.null(pca)) {
     if (Matrix::rankMatrix(x) < ncol(x)) {
@@ -90,13 +100,6 @@ run_infomax <- function(x,
                                  method = whiten)
   }
 
-
-  # # #cov(x)
-
-  #
-
-
-
   # 4. Train ICA
   start_time <- proc.time()
   rotation_mat <-
@@ -124,7 +127,8 @@ run_infomax <- function(x,
        index.return = TRUE)$ix
   mixing_mat <- mixing_mat[, vaf_order]
 
-  unmixing_mat <- t(MASS::ginv(mixing_mat, tol = 0))
+  unmixing_mat <- t(MASS::ginv(mixing_mat,
+                               tol = 0))
 
   if (pca_flag) {
      x <- x_o
