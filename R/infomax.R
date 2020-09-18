@@ -1,6 +1,6 @@
 #' Run Infomax ICA
 #'
-#' Run Infomax and extended-Infomax on a matrix of data. Mini-batch stochastic
+#' Run Infomax or extended-Infomax on a matrix of data. Mini-batch stochastic
 #' gradient descent algorithm.
 #'
 #' @param x matrix of data; features in columns, samples in rows.
@@ -11,17 +11,21 @@
 #' @param annealdeg Angle at which learning rate reduced
 #' @param tol Tolerance for convergence of ICA. Defaults to 1e-07.
 #' @param lrate Initial learning rate.
-#' @param blocksize size of blocks of data used for learning
+#' @param blocksize Size of blocks of data used for learning
 #' @param kurtsize Size of blocks for kurtosis checking
 #' @param maxiter Maximum number of iterations
-#' @param extended Run extended-Infomax
-#' @param whiten Whitening method to use
-#' @param verbose print informative messages
+#' @param extended Run extended-Infomax. Defaults to TRUE.
+#' @param whiten Whitening method to use. See notes on usage.
+#' @param verbose Print informative messages for each update of the algorithm.
 #' @author Matt Craddock \email{matt@@mattcraddock.com}
-#' @references Bell, A.J., & Sejnowski, T.J. (1995). An information-maximization approach to blind separation and blind deconvolution. *Neural Computation, 7,* 1129-159
-#' @return A list containing: * S  Matrix of source estimates * M  Estimated
-#'   mixing matrix * W  Estimated unmixing matrix * iter Number of iterations
-#'   completed
+#' @references
+#' * Bell, A.J., & Sejnowski, T.J. (1995). An information-maximization approach to blind separation and blind deconvolution. *Neural Computation, 7,* 1129-159
+#' * Makeig, S., Bell, A.J., Jung, T-P and Sejnowski, T.J., "Independent component analysis of electroencephalographic data,"  In: D. Touretzky, M. Mozer and M. Hasselmo (Eds). Advances in Neural  Information Processing Systems 8:145-151, MIT Press, Cambridge, MA (1996).
+#' @return A list containing:
+#' * S  Matrix of source estimates
+#' * M  Estimated mixing matrix
+#' * W  Estimated unmixing matrix
+#' * iter Number of iterations completed
 #' @export
 run_infomax <- function(x,
                         centre = TRUE,
@@ -34,7 +38,7 @@ run_infomax <- function(x,
                         kurtsize = 6000,
                         maxiter = 200,
                         extended = TRUE,
-                        whiten = c("eeglab",
+                        whiten = c("sqrtm",
                                    "ZCA",
                                    "PCA",
                                    "ZCA-cor",
@@ -44,7 +48,7 @@ run_infomax <- function(x,
 
   x <- as.matrix(x)
   whiten <- match.arg(whiten,
-                      c("eeglab",
+                      c("sqrtm",
                         "ZCA",
                         "PCA",
                         "ZCA-cor",
@@ -83,15 +87,20 @@ run_infomax <- function(x,
     ncomp <- ncol(x)
   }
 
-  # use mne-python lrate heuristic - eeglab one sets it too small.
+  # Use mne-python lrate heuristic
   if (is.null(lrate)) {
     lrate <- .01 / log(ncomp^2)
   }
 
   # 3. perform whitening/sphering
-  if (identical(whiten, "eeglab")) {
-    white_cov <- 2.0 * pracma::sqrtm(cov(x))$Binv
-    x_white <- t(tcrossprod(white_cov, x))
+  if (identical(whiten,
+                "sqrtm")) {
+    #white_cov <- 2.0 * pracma::sqrtm(cov(x))$Binv
+    white_cov <- eigen(stats::cov(x))
+    white_cov <- white_cov$vectors %*% diag(1/sqrt(white_cov$values)) %*% MASS::ginv(white_cov$vectors)
+    white_cov <- 2 * white_cov
+    x_white <- t(tcrossprod(white_cov,
+                            x))
   } else {
     white_cov <-
       whitening::whiteningMatrix(stats::cov(as.matrix(x)),
@@ -110,10 +119,12 @@ run_infomax <- function(x,
            annealdeg = annealdeg,
            annealstep = anneal,
            tol = tol,
-           verbose = verbose)
+           verbose = verbose)$weights
 
-  unmix_mat <- crossprod(rotation_mat, white_cov)
-  mixing_mat <- MASS::ginv(unmix_mat, tol = 0)
+  unmix_mat <- crossprod(rotation_mat,
+                         white_cov)
+  mixing_mat <- MASS::ginv(unmix_mat,
+                           tol = 0)
 
   if (pca_flag) {
     mixing_mat <- pca_decomp[, 1:pca] %*% mixing_mat
@@ -211,7 +222,41 @@ ext_in <- function(x,
   n_small_angle <- 20
   count_small_angle <- 0
   sum_change <- 0
-  cum_delta <- 0
+
+  if (extended) {
+    loss_fun <- tanh
+    bias_fun <- function(y) {
+      colSums(y) * - 2
+    }
+
+    update_weights <- function(weights,
+                               BI,
+                               signs,
+                               n_comps,
+                               u,
+                               y) {
+      weights %*% (BI - matrix(signs, n_comps, n_comps, byrow = TRUE) * crossprod(u, y) - crossprod(u))
+    }
+
+  } else {
+    loss_fun <-
+      function(u) {
+        1 / (1 + exp(-u))
+      }
+    bias_fun <- function(y) {
+      colSums(1 - 2 * y)
+    }
+
+    update_weights <- function(weights,
+                               BI,
+                               signs,
+                               n_comps,
+                               u,
+                               y) {
+      weights %*% (BI + crossprod(u, (1 - 2 * y)))
+    }
+
+  }
 
   while (iter < maxiter) {
     # shuffle timepoints
@@ -223,47 +268,56 @@ ext_in <- function(x,
                        blocksize,
                        n_comps,
                        byrow = TRUE)
-      y <- tanh(u)
 
-      weights <- weights + lrate * weights %*% (BI - matrix(signs, n_comps, n_comps, byrow = TRUE) * crossprod(u, y) - crossprod(u))
+      y <- loss_fun(u)
 
-      bias <- bias + lrate * colSums(y) * -2
+      #weights <- weights + lrate * weights %*% (BI - matrix(signs, n_comps, n_comps, byrow = TRUE) * crossprod(u, y) - crossprod(u))
+
+      weights <- weights + lrate * update_weights(weights,
+                                                  BI,
+                                                  signs,
+                                                  n_comps,
+                                                  u,
+                                                  y)
+      bias <- bias + lrate * bias_fun(y) #colSums(y) * -2
 
       # check weights
       if (max(abs(weights)) > max_weight) {
         blowup <- TRUE
       }
 
-      # kurtosis estimation
-      if (extblocks > 0 & blockno %% extblocks == 0) {
-        if (kurt_size < n_samps) {
-          test_act <- x[sample.int(nrow(x), kurt_size), ] %*% weights
-        } else {
-          test_act <- x %*% weights
-        }
+      if (extended) {
+        # kurtosis estimation
+        if (extblocks > 0 & blockno %% extblocks == 0) {
+          if (kurt_size < n_samps) {
+            test_act <- x[sample.int(nrow(x), kurt_size), ] %*% weights
+          } else {
+            test_act <- x %*% weights
+          }
 
-        kurt <- colMeans(test_act * test_act * test_act * test_act) / colMeans(test_act^2)^2
-        kurt <- kurt - 3
+          kurt <- colMeans(test_act * test_act * test_act * test_act) / colMeans(test_act^2)^2
+          kurt <- kurt - 3
 
-        if (extmomentum > 0) {
-          kurt <- extmomentum * old_kurt + (1 - extmomentum) * kurt
-          old_kurt <- kurt
-        }
+          if (extmomentum > 0) {
+            kurt <- extmomentum * old_kurt + (1 - extmomentum) * kurt
+            old_kurt <- kurt
+          }
 
-        signs <- sign(kurt + signsbias)
+          signs <- sign(kurt + signsbias)
 
-        if (isTRUE(all.equal(signs, oldsigns))) {
-          signcount <- signcount + 1
-        } else {
-          signcount <- 0
-        }
+          if (isTRUE(all.equal(signs, oldsigns))) {
+            signcount <- signcount + 1
+          } else {
+            signcount <- 0
+          }
 
-        oldsigns <- signs
-        signcounts <- c(signcounts,
-                        signcount)
-        if (signcount >= signcount_threshold) {
-          extblocks <- trunc(extblocks * signcount_step)
-          signcount <- 0
+          oldsigns <- signs
+          signcounts <- c(signcounts,
+                          signcount)
+          if (signcount >= signcount_threshold) {
+            extblocks <- trunc(extblocks * signcount_step)
+            signcount <- 0
+          }
         }
       }
       blockno <- blockno + 1
@@ -341,5 +395,6 @@ ext_in <- function(x,
     }
 
   }
-  weights
+  list(weights = weights,
+       iter = iter)
 }

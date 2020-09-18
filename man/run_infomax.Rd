@@ -16,7 +16,7 @@ run_infomax(
   kurtsize = 6000,
   maxiter = 200,
   extended = TRUE,
-  whiten = c("eeglab", "ZCA", "PCA", "ZCA-cor", "PCA-cor", "none"),
+  whiten = c("sqrtm", "ZCA", "PCA", "ZCA-cor", "PCA-cor", "none"),
   verbose = TRUE
 )
 }
@@ -36,29 +36,36 @@ rank deficient.}
 
 \item{lrate}{Initial learning rate.}
 
-\item{blocksize}{size of blocks of data used for learning}
+\item{blocksize}{Size of blocks of data used for learning}
 
 \item{kurtsize}{Size of blocks for kurtosis checking}
 
 \item{maxiter}{Maximum number of iterations}
 
-\item{extended}{Run extended-Infomax}
+\item{extended}{Run extended-Infomax. Defaults to TRUE.}
 
-\item{whiten}{Whitening method to use}
+\item{whiten}{Whitening method to use. See notes on usage.}
 
-\item{verbose}{print informative messages}
+\item{verbose}{Print informative messages for each update of the algorithm.}
 }
 \value{
-A list containing: * S  Matrix of source estimates * M  Estimated
-mixing matrix * W  Estimated unmixing matrix * iter Number of iterations
-completed
+A list containing:
+\itemize{
+\item S  Matrix of source estimates
+\item M  Estimated mixing matrix
+\item W  Estimated unmixing matrix
+\item iter Number of iterations completed
+}
 }
 \description{
-Run Infomax and extended-Infomax on a matrix of data. Mini-batch stochastic
+Run Infomax or extended-Infomax on a matrix of data. Mini-batch stochastic
 gradient descent algorithm.
 }
 \references{
-Bell, A.J., & Sejnowski, T.J. (1995). An information-maximization approach to blind separation and blind deconvolution. \emph{Neural Computation, 7,} 1129-159
+\itemize{
+\item Bell, A.J., & Sejnowski, T.J. (1995). An information-maximization approach to blind separation and blind deconvolution. \emph{Neural Computation, 7,} 1129-159
+\item Makeig, S., Bell, A.J., Jung, T-P and Sejnowski, T.J., "Independent component analysis of electroencephalographic data,"  In: D. Touretzky, M. Mozer and M. Hasselmo (Eds). Advances in Neural  Information Processing Systems 8:145-151, MIT Press, Cambridge, MA (1996).
+}
 }
 \author{
 Matt Craddock \email{matt@mattcraddock.com}

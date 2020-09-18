@@ -7,12 +7,9 @@
 ## usethis namespace: end
 NULL
 
-## usethis namespace: start
-#' @importFrom Rcpp sourceCpp
-## usethis namespace: end
-NULL
 
-## usethis namespace: start
-#' @useDynLib infomax, .registration = TRUE
-## usethis namespace: end
-NULL
+utils::globalVariables(c("BI",
+                         "lrate",
+                         "n_comps",
+                         "signs",
+                         "y"))
