@@ -1,9 +1,9 @@
-#' Run Infomax ICA
+#' Run Infomax Independent Component Analysis
 #'
-#' Run Infomax or extended-Infomax on a matrix of data. Mini-batch stochastic
-#' gradient descent algorithm.
+#' Run Infomax or extended-Infomax on a matrix of data. Uses a mini-batch stochastic
+#' gradient descent algorithm to
 #'
-#' @param x matrix of data; features in columns, samples in rows.
+#' @param x Matrix of data to be decomposed; features in columns, samples in rows.
 #' @param centre Mean-centre columns before running the algorithm.
 #' @param pca Use PCA dimensionality reduction. Often helpful when the data is
 #'   rank deficient.
@@ -22,10 +22,10 @@
 #' * Bell, A.J., & Sejnowski, T.J. (1995). An information-maximization approach to blind separation and blind deconvolution. *Neural Computation, 7,* 1129-159
 #' * Makeig, S., Bell, A.J., Jung, T-P and Sejnowski, T.J., "Independent component analysis of electroencephalographic data,"  In: D. Touretzky, M. Mozer and M. Hasselmo (Eds). Advances in Neural  Information Processing Systems 8:145-151, MIT Press, Cambridge, MA (1996).
 #' @return A list containing:
-#' * S  Matrix of source estimates
-#' * M  Estimated mixing matrix
-#' * W  Estimated unmixing matrix
-#' * iter Number of iterations completed
+#' * **S**:  Matrix of source estimates
+#' * **M**:  Estimated mixing matrix
+#' * **W**:  Estimated unmixing matrix
+#' * **iter**: Number of iterations completed
 #' @export
 run_infomax <- function(x,
                         centre = TRUE,
@@ -68,9 +68,12 @@ run_infomax <- function(x,
                   0.3 * nrow(x)))
   }
 
-  # # 1. remove channel means
+  # # 1. remove column means
   if (centre) {
    x <- scale(x, scale = FALSE)
+   if (verbose) {
+     message("Removing column means...")
+   }
   }
 
   # 2. perform pca if necessary
@@ -152,8 +155,7 @@ run_infomax <- function(x,
                    " s"))
   }
 
-  S <- as.data.frame(x %*% unmixing_mat)
-  names(S) <- sprintf("Comp%03d", 1:ncol(S))
+  S <- x %*% unmixing_mat
   list(M = mixing_mat,
        W = unmixing_mat,
        S = S)
@@ -221,7 +223,6 @@ ext_in <- function(x,
   lastt <- (nblock - 1) * blocksize + 1
   n_small_angle <- 20
   count_small_angle <- 0
-  sum_change <- 0
 
   if (extended) {
     loss_fun <- tanh

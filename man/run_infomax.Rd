@@ -2,7 +2,7 @@
 % Please edit documentation in R/infomax.R
 \name{run_infomax}
 \alias{run_infomax}
-\title{Run Infomax ICA}
+\title{Run Infomax Independent Component Analysis}
 \usage{
 run_infomax(
   x,
@@ -21,7 +21,7 @@ run_infomax(
 )
 }
 \arguments{
-\item{x}{matrix of data; features in columns, samples in rows.}
+\item{x}{Matrix of data to be decomposed; features in columns, samples in rows.}
 
 \item{centre}{Mean-centre columns before running the algorithm.}
 
@@ -51,15 +51,15 @@ rank deficient.}
 \value{
 A list containing:
 \itemize{
-\item S  Matrix of source estimates
-\item M  Estimated mixing matrix
-\item W  Estimated unmixing matrix
-\item iter Number of iterations completed
+\item \strong{S}:  Matrix of source estimates
+\item \strong{M}:  Estimated mixing matrix
+\item \strong{W}:  Estimated unmixing matrix
+\item \strong{iter}: Number of iterations completed
 }
 }
 \description{
-Run Infomax or extended-Infomax on a matrix of data. Mini-batch stochastic
-gradient descent algorithm.
+Run Infomax or extended-Infomax on a matrix of data. Uses a mini-batch stochastic
+gradient descent algorithm to
 }
 \references{
 \itemize{

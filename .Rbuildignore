@@ -4,3 +4,5 @@
 ^codecov\.yml$
 ^README\.Rmd$
 ^docs$
+^_pkgdown\.yml$
+^pkgdown$

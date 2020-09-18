@@ -6,6 +6,6 @@
 \alias{infomax-package}
 \title{infomax: Infomax Independent Component Analysis}
 \description{
-Implements Infomax Independent Component Analysis (ICA)
+Implements Infomax and Extended Infomax Independent Component Analysis (ICA).
 }
 \keyword{internal}
