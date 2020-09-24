@@ -3,6 +3,11 @@
 #' Run Infomax or extended-Infomax on a matrix of data. Mini-batch stochastic
 #' gradient descent algorithm.
 #'
+#' The matrix can be prewhitened in several ways. The default is to perform
+#' sphering using the inverse of the square root of the covariance matrix of the
+#' original data. the Whitening methods implemented in the package `whitening`
+#' are `PCA`, `ZCA`, `ZCA-cor`, and `PCA-cor`
+#'
 #' @param x matrix of data; features in columns, samples in rows.
 #' @param centre Mean-centre columns before running the algorithm.
 #' @param pca Use PCA dimensionality reduction. Often helpful when the data is
@@ -18,9 +23,13 @@
 #' @param whiten Whitening method to use. See notes on usage.
 #' @param verbose Print informative messages for each update of the algorithm.
 #' @author Matt Craddock \email{matt@@mattcraddock.com}
-#' @references
-#' * Bell, A.J., & Sejnowski, T.J. (1995). An information-maximization approach to blind separation and blind deconvolution. *Neural Computation, 7,* 1129-159
-#' * Makeig, S., Bell, A.J., Jung, T-P and Sejnowski, T.J., "Independent component analysis of electroencephalographic data,"  In: D. Touretzky, M. Mozer and M. Hasselmo (Eds). Advances in Neural  Information Processing Systems 8:145-151, MIT Press, Cambridge, MA (1996).
+#' @references * Bell, A.J., & Sejnowski, T.J. (1995). An
+#' information-maximization approach to blind separation and blind
+#' deconvolution. *Neural Computation, 7,* 1129-159
+#' * Makeig, S., Bell, A.J., Jung, T-P and Sejnowski, T.J., "Independent component analysis of
+#' electroencephalographic data,"  In: D. Touretzky, M. Mozer and M. Hasselmo
+#' (Eds). Advances in Neural  Information Processing Systems 8:145-151, MIT
+#' Press, Cambridge, MA (1996).
 #' @return A list containing:
 #' * S  Matrix of source estimates
 #' * M  Estimated mixing matrix
@@ -95,7 +104,6 @@ run_infomax <- function(x,
   # 3. perform whitening/sphering
   if (identical(whiten,
                 "sqrtm")) {
-    #white_cov <- 2.0 * pracma::sqrtm(cov(x))$Binv
     white_cov <- eigen(stats::cov(x))
     white_cov <- white_cov$vectors %*% diag(1/sqrt(white_cov$values)) %*% MASS::ginv(white_cov$vectors)
     white_cov <- 2 * white_cov

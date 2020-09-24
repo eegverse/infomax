@@ -61,10 +61,21 @@ A list containing:
 Run Infomax or extended-Infomax on a matrix of data. Mini-batch stochastic
 gradient descent algorithm.
 }
+\details{
+The matrix can be prewhitened in several ways. The default is to perform
+sphering using the inverse of the square root of the covariance matrix of the
+original data. the Whitening methods implemented in the package \code{whitening}
+are \code{PCA}, \code{ZCA}, \code{ZCA-cor}, and \code{PCA-cor}
+}
 \references{
 \itemize{
-\item Bell, A.J., & Sejnowski, T.J. (1995). An information-maximization approach to blind separation and blind deconvolution. \emph{Neural Computation, 7,} 1129-159
-\item Makeig, S., Bell, A.J., Jung, T-P and Sejnowski, T.J., "Independent component analysis of electroencephalographic data,"  In: D. Touretzky, M. Mozer and M. Hasselmo (Eds). Advances in Neural  Information Processing Systems 8:145-151, MIT Press, Cambridge, MA (1996).
+\item Bell, A.J., & Sejnowski, T.J. (1995). An
+information-maximization approach to blind separation and blind
+deconvolution. \emph{Neural Computation, 7,} 1129-159
+\item Makeig, S., Bell, A.J., Jung, T-P and Sejnowski, T.J., "Independent component analysis of
+electroencephalographic data,"  In: D. Touretzky, M. Mozer and M. Hasselmo
+(Eds). Advances in Neural  Information Processing Systems 8:145-151, MIT
+Press, Cambridge, MA (1996).
 }
 }
 \author{
