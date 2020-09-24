@@ -160,7 +160,7 @@ run_infomax <- function(x,
                    " s"))
   }
 
-  S <- as.data.frame(x %*% unmixing_mat)
+  S <- x %*% unmixing_mat
   names(S) <- sprintf("Comp%03d", 1:ncol(S))
   list(M = mixing_mat,
        W = unmixing_mat,
