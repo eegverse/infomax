@@ -127,9 +127,9 @@ run_infomax <- function(x,
            annealdeg = annealdeg,
            annealstep = anneal,
            tol = tol,
-           verbose = verbose)$weights
+           verbose = verbose)
 
-  unmix_mat <- crossprod(rotation_mat,
+  unmix_mat <- crossprod(rotation_mat$weights,
                          white_cov)
   mixing_mat <- MASS::ginv(unmix_mat,
                            tol = 0)
@@ -164,7 +164,8 @@ run_infomax <- function(x,
   names(S) <- sprintf("Comp%03d", 1:ncol(S))
   list(M = mixing_mat,
        W = unmixing_mat,
-       S = S)
+       S = S,
+       iter = rotation_mat$iter)
 }
 
 ext_in <- function(x,
