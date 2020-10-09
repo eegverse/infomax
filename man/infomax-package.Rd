@@ -11,4 +11,13 @@ Implements Infomax and Extended Infomax Independent Component Analysis (ICA).
  and 'MNE-Python', frequently used to perform ICA on electroencephalographic or
  magnetoencephalographic time-series.
 }
+\author{
+\strong{Maintainer}: Matt Craddock \email{matt@mattcraddock.com}
+
+Other contributors:
+\itemize{
+  \item Scott Makeig et al., SCCN/INC/UCSD \email{scott@sccn.ucsd.ed} [copyright holder]
+}
+
+}
 \keyword{internal}
