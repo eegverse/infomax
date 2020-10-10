@@ -23,24 +23,26 @@ run_infomax(
 \arguments{
 \item{x}{matrix of data; features in columns, samples in rows.}
 
-\item{centre}{Mean-centre columns before running the algorithm.}
+\item{centre}{Mean-centre columns before running the algorithm. Defaults to
+TRUE.}
 
-\item{pca}{Use PCA dimensionality reduction. Often helpful when the data is
-rank deficient.}
+\item{pca}{A scalar. Use PCA dimensionality reduction. Often helpful when the
+data is rank deficient.}
 
-\item{anneal}{Anneal rate at which learning rate reduced}
+\item{anneal}{Annealing rate at which learning rate reduced.}
 
-\item{annealdeg}{Angle at which learning rate reduced}
+\item{annealdeg}{Angle at which learning rate reduced.}
 
 \item{tol}{Tolerance for convergence of ICA. Defaults to 1e-07.}
 
-\item{lrate}{Initial learning rate.}
+\item{lrate}{Initial learning rate. NULL}
 
-\item{blocksize}{Size of blocks of data used for learning}
+\item{blocksize}{Size of blocks of data used for learning.}
 
-\item{kurtsize}{Size of blocks for kurtosis checking}
+\item{kurtsize}{Size of blocks for kurtosis checking. Defaults to 6000 or
+length of data, whichever is smaller.}
 
-\item{maxiter}{Maximum number of iterations}
+\item{maxiter}{Maximum number of iterations. Defaults to 200.}
 
 \item{extended}{Run extended-Infomax. Defaults to TRUE.}
 
@@ -64,8 +66,10 @@ gradient descent algorithm.
 \details{
 The matrix can be prewhitened in several ways. The default is to perform
 sphering using the inverse of the square root of the covariance matrix of the
-original data. the Whitening methods implemented in the package \code{whitening}
-are \code{PCA}, \code{ZCA}, \code{ZCA-cor}, and \code{PCA-cor}
+original data, the method used by the 'EEGLAB' and 'MNE-Python' toolboxes in
+other languages. Whitening methods implemented in the package \code{whitening} are
+\code{PCA}, \code{ZCA}, \code{ZCA-cor}, and \code{PCA-cor}. Please see the \code{whitening} package
+for further information on their implementation of these methods.
 }
 \references{
 \itemize{

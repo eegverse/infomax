@@ -5,20 +5,24 @@
 #'
 #' The matrix can be prewhitened in several ways. The default is to perform
 #' sphering using the inverse of the square root of the covariance matrix of the
-#' original data, the method used by the 'EEGLAB' and 'MNE-Python' toolboxes in other languages. Whitening methods implemented in the package `whitening`
-#' are `PCA`, `ZCA`, `ZCA-cor`, and `PCA-cor`
+#' original data, the method used by the 'EEGLAB' and 'MNE-Python' toolboxes in
+#' other languages. Whitening methods implemented in the package `whitening` are
+#' `PCA`, `ZCA`, `ZCA-cor`, and `PCA-cor`. Please see the `whitening` package
+#' for further information on their implementation of these methods.
 #'
 #' @param x matrix of data; features in columns, samples in rows.
-#' @param centre Mean-centre columns before running the algorithm.
-#' @param pca Use PCA dimensionality reduction. Often helpful when the data is
-#'   rank deficient.
-#' @param anneal Anneal rate at which learning rate reduced
-#' @param annealdeg Angle at which learning rate reduced
+#' @param centre Mean-centre columns before running the algorithm. Defaults to
+#'   TRUE.
+#' @param pca A scalar. Use PCA dimensionality reduction. Often helpful when the
+#'   data is rank deficient.
+#' @param anneal Annealing rate at which learning rate reduced.
+#' @param annealdeg Angle at which learning rate reduced.
 #' @param tol Tolerance for convergence of ICA. Defaults to 1e-07.
-#' @param lrate Initial learning rate.
-#' @param blocksize Size of blocks of data used for learning
-#' @param kurtsize Size of blocks for kurtosis checking
-#' @param maxiter Maximum number of iterations
+#' @param lrate Initial learning rate. NULL
+#' @param blocksize Size of blocks of data used for learning.
+#' @param kurtsize Size of blocks for kurtosis checking. Defaults to 6000 or
+#'   length of data, whichever is smaller.
+#' @param maxiter Maximum number of iterations. Defaults to 200.
 #' @param extended Run extended-Infomax. Defaults to TRUE.
 #' @param whiten Whitening method to use. See notes on usage.
 #' @param verbose Print informative messages for each update of the algorithm.
@@ -102,25 +106,27 @@ run_infomax <- function(x,
   }
 
   # 3. perform whitening/sphering
-  if (identical(whiten,
-                "sqrtm")) {
-    white_cov <- eigen(stats::cov(x))
-    white_cov <- white_cov$vectors %*% diag(1/sqrt(white_cov$values)) %*% MASS::ginv(white_cov$vectors)
-    white_cov <- 2 * white_cov
-    x_white <- t(tcrossprod(white_cov,
-                            x))
-  } else {
-    white_cov <-
-      whitening::whiteningMatrix(stats::cov(as.matrix(x)),
-                                 method = whiten)
-    x_white <- whitening::whiten(x,
-                                 method = whiten)
-  }
+  whitened_data <- do_whitening(x,
+                                whiten)
+  # if (identical(whiten,
+  #               "sqrtm")) {
+  #   white_cov <- eigen(stats::cov(x))
+  #   white_cov <- white_cov$vectors %*% diag(1/sqrt(white_cov$values)) %*% MASS::ginv(white_cov$vectors)
+  #   white_cov <- 2 * white_cov
+  #   x_white <- t(tcrossprod(white_cov,
+  #                           x))
+  # } else {
+  #   white_cov <-
+  #     whitening::whiteningMatrix(stats::cov(as.matrix(x)),
+  #                                method = whiten)
+  #   x_white <- whitening::whiten(x,
+  #                                method = whiten)
+  # }
 
   # 4. Train ICA
   start_time <- proc.time()
   rotation_mat <-
-    ext_in(x_white,
+    ext_in(whitened_data$x_white,
            blocksize = blocksize,
            lrate = lrate,
            maxiter = maxiter,
@@ -130,7 +136,7 @@ run_infomax <- function(x,
            verbose = verbose)
 
   unmix_mat <- crossprod(rotation_mat$weights,
-                         white_cov)
+                         whitened_data$white_cov)
   mixing_mat <- MASS::ginv(unmix_mat,
                            tol = 0)
 
@@ -161,7 +167,7 @@ run_infomax <- function(x,
   }
 
   S <- x %*% unmixing_mat
-  names(S) <- sprintf("Comp%03d", 1:ncol(S))
+  colnames(S) <- sprintf("Comp%03d", 1:ncol(S))
   list(M = mixing_mat,
        W = unmixing_mat,
        S = S,
@@ -407,3 +413,25 @@ ext_in <- function(x,
   list(weights = weights,
        iter = iter)
 }
+
+do_whitening <- function(x,
+                         whiten) {
+
+  if (identical(whiten,
+                "sqrtm")) {
+    white_cov <- eigen(stats::cov(x))
+    white_cov <- white_cov$vectors %*% diag(1/sqrt(white_cov$values)) %*% MASS::ginv(white_cov$vectors)
+    white_cov <- 2 * white_cov
+    x_white <- t(tcrossprod(white_cov,
+                            x))
+  } else {
+    white_cov <-
+      whitening::whiteningMatrix(stats::cov(as.matrix(x)),
+                                 method = whiten)
+    x_white <- whitening::whiten(x,
+                                 method = whiten)
+  }
+  list(x_white = x_white,
+       white_cov = white_cov)
+}
+
