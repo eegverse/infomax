@@ -5,7 +5,7 @@
 #'
 #' The matrix can be prewhitened in several ways. The default is to perform
 #' sphering using the inverse of the square root of the covariance matrix of the
-#' original data. the Whitening methods implemented in the package `whitening`
+#' original data, the method used by the 'EEGLAB' and 'MNE-Python' toolboxes in other languages. Whitening methods implemented in the package `whitening`
 #' are `PCA`, `ZCA`, `ZCA-cor`, and `PCA-cor`
 #'
 #' @param x matrix of data; features in columns, samples in rows.
