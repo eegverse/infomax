@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Run Infomax ICA — run_infomax • infomax</title>
+<title>Run Infomax Independent Component Analysis — run_infomax • infomax</title>
 
 
 <!-- jquery -->
@@ -39,9 +39,9 @@
 
 
 
-<meta property="og:title" content="Run Infomax ICA — run_infomax" />
-<meta property="og:description" content="Run Infomax or extended-Infomax on a matrix of data. Mini-batch stochastic
-gradient descent algorithm." />
+<meta property="og:title" content="Run Infomax Independent Component Analysis — run_infomax" />
+<meta property="og:description" content="Run Infomax or extended-Infomax on a matrix of data. Uses a mini-batch stochastic
+gradient descent algorithm to" />
 
 
 
@@ -107,14 +107,14 @@ gradient descent algorithm." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Run Infomax ICA</h1>
+    <h1>Run Infomax Independent Component Analysis</h1>
     
     <div class="hidden name"><code>run_infomax.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Run Infomax or extended-Infomax on a matrix of data. Mini-batch stochastic
-gradient descent algorithm.</p>
+    <p>Run Infomax or extended-Infomax on a matrix of data. Uses a mini-batch stochastic
+gradient descent algorithm to</p>
     </div>
 
     <pre class="usage"><span class='fu'>run_infomax</span><span class='op'>(</span>
@@ -138,7 +138,7 @@ gradient descent algorithm.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>x</th>
-      <td><p>matrix of data; features in columns, samples in rows.</p></td>
+      <td><p>Matrix of data to be decomposed; features in columns, samples in rows.</p></td>
     </tr>
     <tr>
       <th>centre</th>
@@ -196,10 +196,10 @@ length of data, whichever is smaller.</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>A list containing:</p><ul>
-<li><p>S  Matrix of source estimates</p></li>
-<li><p>M  Estimated mixing matrix</p></li>
-<li><p>W  Estimated unmixing matrix</p></li>
-<li><p>iter Number of iterations completed</p></li>
+<li><p><strong>S</strong>:  Matrix of source estimates</p></li>
+<li><p><strong>M</strong>:  Estimated mixing matrix</p></li>
+<li><p><strong>W</strong>:  Estimated unmixing matrix</p></li>
+<li><p><strong>iter</strong>: Number of iterations completed</p></li>
 </ul>
 
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
