@@ -6,6 +6,22 @@
 \alias{infomax-package}
 \title{infomax: Infomax Independent Component Analysis}
 \description{
+<<<<<<< HEAD
 Implements Infomax and Extended Infomax Independent Component Analysis (ICA).
+=======
+Implements Infomax and Extended Infomax Independent Component Analysis (ICA). 
+ A reimplementation of the mini-batch gradient descent algorithm found in 'EEGLAB' 
+ and 'MNE-Python', frequently used to perform ICA on electroencephalographic or
+ magnetoencephalographic time-series.
+}
+\author{
+\strong{Maintainer}: Matt Craddock \email{matt@mattcraddock.com}
+
+Other contributors:
+\itemize{
+  \item Scott Makeig et al., SCCN/INC/UCSD \email{scott@sccn.ucsd.ed} [copyright holder]
+}
+
+>>>>>>> 391de37e4720a50df0c901492b333f3b5f732c3b
 }
 \keyword{internal}

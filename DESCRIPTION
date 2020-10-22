@@ -2,18 +2,19 @@ Package: infomax
 Type: Package
 Title: Infomax Independent Component Analysis
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: Matt Craddock <matt@mattcraddock.com>
-Description: Implements Infomax and Extended Infomax Independent Component Analysis (ICA).
-License: MIT + file LICENSE
+Authors@R: c(person("Matt", "Craddock", email = "matt@mattcraddock.com", role = c("aut", "cre")), person("Scott", "Makeig et al., SCCN/INC/UCSD", email = "scott@sccn.ucsd.ed", role = c("cph")))
+Description: Implements Infomax and Extended Infomax Independent Component Analysis (ICA). 
+ A reimplementation of the mini-batch gradient descent algorithm found in 'EEGLAB' 
+ and 'MNE-Python', frequently used to perform ICA on electroencephalographic or
+ magnetoencephalographic time-series.
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: 
     whitening,
     stats,
     Matrix,
-    MASS,
-    pracma
+    MASS
 RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE)
 Suggests: 

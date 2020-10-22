@@ -88,6 +88,9 @@ gradient descent algorithm to" />
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -114,21 +117,21 @@ gradient descent algorithm to" />
 gradient descent algorithm to</p>
     </div>
 
-    <pre class="usage"><span class='fu'>run_infomax</span>(
-  <span class='kw'>x</span>,
-  centre = <span class='fl'>TRUE</span>,
-  pca = <span class='kw'>NULL</span>,
-  anneal = <span class='fl'>0.98</span>,
-  annealdeg = <span class='fl'>60</span>,
-  tol = <span class='fl'>1e-07</span>,
-  lrate = <span class='kw'>NULL</span>,
-  blocksize = <span class='kw'>NULL</span>,
-  kurtsize = <span class='fl'>6000</span>,
-  maxiter = <span class='fl'>200</span>,
-  extended = <span class='fl'>TRUE</span>,
-  whiten = <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"sqrtm"</span>, <span class='st'>"ZCA"</span>, <span class='st'>"PCA"</span>, <span class='st'>"ZCA-cor"</span>, <span class='st'>"PCA-cor"</span>, <span class='st'>"none"</span>),
-  verbose = <span class='fl'>TRUE</span>
-)</pre>
+    <pre class="usage"><span class='fu'>run_infomax</span><span class='op'>(</span>
+  <span class='va'>x</span>,
+  centre <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  pca <span class='op'>=</span> <span class='cn'>NULL</span>,
+  anneal <span class='op'>=</span> <span class='fl'>0.98</span>,
+  annealdeg <span class='op'>=</span> <span class='fl'>60</span>,
+  tol <span class='op'>=</span> <span class='fl'>1e-07</span>,
+  lrate <span class='op'>=</span> <span class='cn'>NULL</span>,
+  blocksize <span class='op'>=</span> <span class='cn'>NULL</span>,
+  kurtsize <span class='op'>=</span> <span class='fl'>6000</span>,
+  maxiter <span class='op'>=</span> <span class='fl'>200</span>,
+  extended <span class='op'>=</span> <span class='cn'>TRUE</span>,
+  whiten <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"sqrtm"</span>, <span class='st'>"ZCA"</span>, <span class='st'>"PCA"</span>, <span class='st'>"ZCA-cor"</span>, <span class='st'>"PCA-cor"</span>, <span class='st'>"none"</span><span class='op'>)</span>,
+  verbose <span class='op'>=</span> <span class='cn'>TRUE</span>
+<span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -197,12 +200,23 @@ rank deficient.</p></td>
 <li><p><strong>iter</strong>: Number of iterations completed</p></li>
 </ul>
 
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>The matrix can be prewhitened in several ways. The default is to perform
+sphering using the inverse of the square root of the covariance matrix of the
+original data. the Whitening methods implemented in the package <code>whitening</code>
+are <code>PCA</code>, <code>ZCA</code>, <code>ZCA-cor</code>, and <code>PCA-cor</code></p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     
 <ul>
-<li><p>Bell, A.J., &amp; Sejnowski, T.J. (1995). An information-maximization approach to blind separation and blind deconvolution. <em>Neural Computation, 7,</em> 1129-159</p></li>
-<li><p>Makeig, S., Bell, A.J., Jung, T-P and Sejnowski, T.J., "Independent component analysis of electroencephalographic data,"  In: D. Touretzky, M. Mozer and M. Hasselmo (Eds). Advances in Neural  Information Processing Systems 8:145-151, MIT Press, Cambridge, MA (1996).</p></li>
+<li><p>Bell, A.J., &amp; Sejnowski, T.J. (1995). An
+information-maximization approach to blind separation and blind
+deconvolution. <em>Neural Computation, 7,</em> 1129-159</p></li>
+<li><p>Makeig, S., Bell, A.J., Jung, T-P and Sejnowski, T.J., "Independent component analysis of
+electroencephalographic data,"  In: D. Touretzky, M. Mozer and M. Hasselmo
+(Eds). Advances in Neural  Information Processing Systems 8:145-151, MIT
+Press, Cambridge, MA (1996).</p></li>
 </ul>
 
     <h2 class="hasAnchor" id="author"><a class="anchor" href="#author"></a>Author</h2>

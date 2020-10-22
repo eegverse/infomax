@@ -19,22 +19,19 @@ knitr::opts_chunk$set(
   [![Codecov test coverage](https://codecov.io/gh/craddm/infomax/branch/master/graph/badge.svg)](https://codecov.io/gh/craddm/infomax?branch=master)
   <!-- badges: end -->
 
-The goal of infomax is to ...
+The `infomax` package is an R implementation of the Infomax and Extended Infomax algorithms (Bell & Sejnowski, 1995; Makeig, Bell, Jung, & Sejnowski, 1996) for Independent Component Analysis. 
 
 ## Installation
 
-You can install the released version of infomax from [CRAN](https://CRAN.R-project.org) with:
+The package is not currently released on [CRAN](https://CRAN.R-project.org).
 
-``` r
-install.packages("infomax")
-```
-
-And the development version from [GitHub](https://github.com/) with:
+You can install the development version from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("craddm/infomax")
 ```
+
 ## Example
 
 This is a basic example which shows you how to solve a common problem:
@@ -44,18 +41,34 @@ library(infomax)
 ## basic example code
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
 
-```{r cars}
-summary(cars)
+```{r}
+time_x <- seq(0, 1, by = 1/256)
+source_a <- sin(2 * pi * 5 * time_x)
+source_b <- sin(2 * pi * 10 * time_x)
+plot(time_x, source_a, type = "l")
+plot(time_x, source_b, type = "l")
+plot(time_x, source_a + 2 * source_b, type = "l")
+plot(time_x, source_a * 3.4 + 1.5 * source_b, type = "l")
+```
+The function returns the estimated mixing matrix, unmixing matrix, and unmixed source timecourses.
+
+```{r}
+mixed_data <- matrix(NA,
+                     nrow = length(time_x),
+                     ncol = 2)
+mixed_data[, 1] <- source_a + 2 * source_b
+mixed_data[, 2] <- source_a * 3.4 + 1.5 * source_b
+dat_out <- run_infomax(mixed_data, whiten = "PCA")
+plot(time_x,
+     dat_out$S[,1],
+     type = "l")
+plot(time_x,
+     dat_out$S[,2],
+     type = "l")
 ```
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date.
+## References
 
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub!
+* Bell, A.J., & Sejnowski, T.J. (1995). An information-maximization approach to blind separation and blind deconvolution. *Neural Computation, 7,* 1129-159
+* Makeig, S., Bell, A.J., Jung, T-P and Sejnowski, T.J., "Independent component analysis of  electroencephalographic data,"  In: D. Touretzky, M. Mozer and M. Hasselmo (Eds). Advances in Neural  Information Processing Systems 8:145-151, MIT Press, Cambridge, MA (1996).
