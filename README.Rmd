@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
 ```
 
 # infomax
+
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 
@@ -42,6 +43,9 @@ library(infomax)
 ## basic example code
 ```
 
+ICA can be used to separate linear mixtures of different, independent signal sources.
+
+In the example below, we generate two independent signals and then mix them together.
 
 ```{r}
 time_x <- seq(0, 1, by = 1/256)
@@ -52,6 +56,7 @@ plot(time_x, source_b, type = "l")
 plot(time_x, source_a + 2 * source_b, type = "l")
 plot(time_x, source_a * 3.4 + 1.5 * source_b, type = "l")
 ```
+
 The function returns the estimated mixing matrix, unmixing matrix, and unmixed source timecourses.
 
 ```{r}
