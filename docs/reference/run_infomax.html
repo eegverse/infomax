@@ -81,7 +81,7 @@ gradient descent algorithm to" />
       <ul class="nav navbar-nav">
         <li>
   <a href="../index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -142,20 +142,21 @@ gradient descent algorithm to</p>
     </tr>
     <tr>
       <th>centre</th>
-      <td><p>Mean-centre columns before running the algorithm.</p></td>
+      <td><p>Mean-centre columns before running the algorithm. Defaults to
+TRUE.</p></td>
     </tr>
     <tr>
       <th>pca</th>
-      <td><p>Use PCA dimensionality reduction. Often helpful when the data is
-rank deficient.</p></td>
+      <td><p>A scalar. Use PCA dimensionality reduction. Often helpful when the
+data is rank deficient.</p></td>
     </tr>
     <tr>
       <th>anneal</th>
-      <td><p>Anneal rate at which learning rate reduced</p></td>
+      <td><p>Annealing rate at which learning rate reduced.</p></td>
     </tr>
     <tr>
       <th>annealdeg</th>
-      <td><p>Angle at which learning rate reduced</p></td>
+      <td><p>Angle at which learning rate reduced.</p></td>
     </tr>
     <tr>
       <th>tol</th>
@@ -163,19 +164,20 @@ rank deficient.</p></td>
     </tr>
     <tr>
       <th>lrate</th>
-      <td><p>Initial learning rate.</p></td>
+      <td><p>Initial learning rate. NULL</p></td>
     </tr>
     <tr>
       <th>blocksize</th>
-      <td><p>Size of blocks of data used for learning</p></td>
+      <td><p>Size of blocks of data used for learning.</p></td>
     </tr>
     <tr>
       <th>kurtsize</th>
-      <td><p>Size of blocks for kurtosis checking</p></td>
+      <td><p>Size of blocks for kurtosis checking. Defaults to 6000 or
+length of data, whichever is smaller.</p></td>
     </tr>
     <tr>
       <th>maxiter</th>
-      <td><p>Maximum number of iterations</p></td>
+      <td><p>Maximum number of iterations. Defaults to 200.</p></td>
     </tr>
     <tr>
       <th>extended</th>
@@ -204,8 +206,10 @@ rank deficient.</p></td>
 
     <p>The matrix can be prewhitened in several ways. The default is to perform
 sphering using the inverse of the square root of the covariance matrix of the
-original data. the Whitening methods implemented in the package <code>whitening</code>
-are <code>PCA</code>, <code>ZCA</code>, <code>ZCA-cor</code>, and <code>PCA-cor</code></p>
+original data, the method used by the 'EEGLAB' and 'MNE-Python' toolboxes in
+other languages. Whitening methods implemented in the package <code>whitening</code> are
+<code>PCA</code>, <code>ZCA</code>, <code>ZCA-cor</code>, and <code>PCA-cor</code>. Please see the <code>whitening</code> package
+for further information on their implementation of these methods.</p>
     <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
 
     

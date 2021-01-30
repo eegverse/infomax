@@ -42,7 +42,7 @@
       <ul class="nav navbar-nav">
 <li>
   <a href="index.html">
-    <span class="fas fa fas fa-home fa-lg"></span>
+    <span class="fas fa-home fa-lg"></span>
      
   </a>
 </li>
@@ -70,215 +70,201 @@
 <a href="#infomax" class="anchor"></a>infomax</h1></div>
 <!-- badges: start -->
 
+<p><a href="https://github.com/craddm/infomax/actions"><img src="https://github.com/craddm/infomax/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></p>
+<p><a href="https://codecov.io/gh/craddm/infomax"><img src="https://codecov.io/gh/craddm/infomax/branch/master/graph/badge.svg?token=8VYL66NE7Z" alt="codecov"></a> <!-- badges: end --></p>
 <p>The <code>infomax</code> package is an R implementation of the Infomax and Extended Infomax algorithms (Bell &amp; Sejnowski, 1995; Makeig, Bell, Jung, &amp; Sejnowski, 1996) for Independent Component Analysis.</p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>The package is not currently released on <a href="https://CRAN.R-project.org">CRAN</a>.</p>
 <p>You can install the development version from <a href="https://github.com/">GitHub</a> with:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="co"># install.packages("devtools")</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"craddm/infomax"</span><span class="op">)</span></pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="co"># install.packages("devtools")</span>
+<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org//reference/remote-reexports.html">install_github</a></span><span class="op">(</span><span class="st">"craddm/infomax"</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
 <p>This is a basic example which shows you how to solve a common problem:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">infomax</span><span class="op">)</span>
-<span class="co">## basic example code</span></pre></div>
-<div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="va">time_x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">256</span><span class="op">)</span>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">infomax</span><span class="op">)</span>
+<span class="co">## basic example code</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">time_x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, by <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">256</span><span class="op">)</span>
 <span class="va">source_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">sin</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span> <span class="op">*</span> <span class="fl">5</span> <span class="op">*</span> <span class="va">time_x</span><span class="op">)</span>
 <span class="va">source_b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html">sin</a></span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">pi</span> <span class="op">*</span> <span class="fl">10</span> <span class="op">*</span> <span class="va">time_x</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">time_x</span>, <span class="va">source_a</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></pre></div>
+<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">time_x</span>, <span class="va">source_a</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-2-1.png" width="100%"></p>
-<div class="sourceCode" id="cb4"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">time_x</span>, <span class="va">source_b</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">time_x</span>, <span class="va">source_b</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-2-2.png" width="100%"></p>
-<div class="sourceCode" id="cb5"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">time_x</span>, <span class="va">source_a</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">source_b</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></pre></div>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">time_x</span>, <span class="va">source_a</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">source_b</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-2-3.png" width="100%"></p>
-<div class="sourceCode" id="cb6"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">time_x</span>, <span class="va">source_a</span> <span class="op">*</span> <span class="fl">3.4</span> <span class="op">+</span> <span class="fl">1.5</span> <span class="op">*</span> <span class="va">source_b</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">time_x</span>, <span class="va">source_a</span> <span class="op">*</span> <span class="fl">3.4</span> <span class="op">+</span> <span class="fl">1.5</span> <span class="op">*</span> <span class="va">source_b</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-2-4.png" width="100%"> The function returns the estimated mixing matrix, unmixing matrix, and unmixed source timecourses.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit">
-<span class="va">mixed_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="cn">NA</span>,
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">mixed_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html">matrix</a></span><span class="op">(</span><span class="cn">NA</span>,
                      nrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html">length</a></span><span class="op">(</span><span class="va">time_x</span><span class="op">)</span>,
                      ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>
 <span class="va">mixed_data</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">source_a</span> <span class="op">+</span> <span class="fl">2</span> <span class="op">*</span> <span class="va">source_b</span>
 <span class="va">mixed_data</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">source_a</span> <span class="op">*</span> <span class="fl">3.4</span> <span class="op">+</span> <span class="fl">1.5</span> <span class="op">*</span> <span class="va">source_b</span>
 <span class="va">dat_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/run_infomax.html">run_infomax</a></span><span class="op">(</span><span class="va">mixed_data</span>, whiten <span class="op">=</span> <span class="st">"PCA"</span><span class="op">)</span>
-<span class="co">#&gt; Step: 1, lrate: 0.007213, wchange: 0.38324052, angledelta:  0.0</span>
-<span class="co">#&gt; Step: 2, lrate: 0.007213, wchange: 0.25253517, angledelta:  0.0</span>
-<span class="co">#&gt; Step: 3, lrate: 0.007213, wchange: 0.09809079, angledelta: 102.1</span>
-<span class="co">#&gt; Step: 4, lrate: 0.007069, wchange: 0.04330047, angledelta: 66.5</span>
-<span class="co">#&gt; Step: 5, lrate: 0.006928, wchange: 0.03084987, angledelta: 117.2</span>
-<span class="co">#&gt; Step: 6, lrate: 0.006789, wchange: 0.03029123, angledelta: 125.9</span>
-<span class="co">#&gt; Step: 7, lrate: 0.006653, wchange: 0.02563884, angledelta: 160.8</span>
-<span class="co">#&gt; Step: 8, lrate: 0.006520, wchange: 0.00510844, angledelta: 163.2</span>
-<span class="co">#&gt; Step: 9, lrate: 0.006390, wchange: 0.00059489, angledelta: 134.9</span>
-<span class="co">#&gt; Step: 10, lrate: 0.006262, wchange: 0.00696743, angledelta: 44.0</span>
-<span class="co">#&gt; Step: 11, lrate: 0.006262, wchange: 0.00633961, angledelta: 74.0</span>
-<span class="co">#&gt; Step: 12, lrate: 0.006137, wchange: 0.01499245, angledelta: 92.2</span>
-<span class="co">#&gt; Step: 13, lrate: 0.006014, wchange: 0.00691107, angledelta: 145.9</span>
-<span class="co">#&gt; Step: 14, lrate: 0.005894, wchange: 0.01419186, angledelta: 129.1</span>
-<span class="co">#&gt; Step: 15, lrate: 0.005776, wchange: 0.00983892, angledelta: 161.8</span>
-<span class="co">#&gt; Step: 16, lrate: 0.005661, wchange: 0.00168692, angledelta: 128.3</span>
-<span class="co">#&gt; Step: 17, lrate: 0.005547, wchange: 0.00165376, angledelta: 66.4</span>
-<span class="co">#&gt; Step: 18, lrate: 0.005436, wchange: 0.00056595, angledelta: 103.4</span>
-<span class="co">#&gt; Step: 19, lrate: 0.005328, wchange: 0.00254645, angledelta: 30.6</span>
-<span class="co">#&gt; Step: 20, lrate: 0.005328, wchange: 0.00642621, angledelta: 136.2</span>
-<span class="co">#&gt; Step: 21, lrate: 0.005221, wchange: 0.01422516, angledelta: 137.1</span>
-<span class="co">#&gt; Step: 22, lrate: 0.005117, wchange: 0.00495641, angledelta: 162.2</span>
-<span class="co">#&gt; Step: 23, lrate: 0.005014, wchange: 0.00882255, angledelta: 146.5</span>
-<span class="co">#&gt; Step: 24, lrate: 0.004914, wchange: 0.00391004, angledelta: 139.4</span>
-<span class="co">#&gt; Step: 25, lrate: 0.004816, wchange: 0.00418703, angledelta: 104.6</span>
-<span class="co">#&gt; Step: 26, lrate: 0.004719, wchange: 0.00089703, angledelta: 89.2</span>
-<span class="co">#&gt; Step: 27, lrate: 0.004625, wchange: 0.00543303, angledelta: 154.0</span>
-<span class="co">#&gt; Step: 28, lrate: 0.004533, wchange: 0.01925850, angledelta: 156.5</span>
-<span class="co">#&gt; Step: 29, lrate: 0.004442, wchange: 0.02191376, angledelta: 157.3</span>
-<span class="co">#&gt; Step: 30, lrate: 0.004353, wchange: 0.00977360, angledelta: 148.9</span>
-<span class="co">#&gt; Step: 31, lrate: 0.004266, wchange: 0.01384598, angledelta: 125.0</span>
-<span class="co">#&gt; Step: 32, lrate: 0.004181, wchange: 0.00468608, angledelta: 115.4</span>
-<span class="co">#&gt; Step: 33, lrate: 0.004097, wchange: 0.00227562, angledelta: 52.9</span>
-<span class="co">#&gt; Step: 34, lrate: 0.004097, wchange: 0.00280510, angledelta: 139.0</span>
-<span class="co">#&gt; Step: 35, lrate: 0.004015, wchange: 0.00357901, angledelta: 153.0</span>
-<span class="co">#&gt; Step: 36, lrate: 0.003935, wchange: 0.00113660, angledelta: 81.1</span>
-<span class="co">#&gt; Step: 37, lrate: 0.003856, wchange: 0.00669071, angledelta: 117.4</span>
-<span class="co">#&gt; Step: 38, lrate: 0.003779, wchange: 0.00897341, angledelta: 139.4</span>
-<span class="co">#&gt; Step: 39, lrate: 0.003703, wchange: 0.00703752, angledelta: 167.6</span>
-<span class="co">#&gt; Step: 40, lrate: 0.003629, wchange: 0.00450349, angledelta: 148.5</span>
-<span class="co">#&gt; Step: 41, lrate: 0.003557, wchange: 0.00344120, angledelta: 139.5</span>
-<span class="co">#&gt; Step: 42, lrate: 0.003486, wchange: 0.00512333, angledelta: 137.9</span>
-<span class="co">#&gt; Step: 43, lrate: 0.003416, wchange: 0.00568290, angledelta: 147.3</span>
-<span class="co">#&gt; Step: 44, lrate: 0.003348, wchange: 0.00323876, angledelta: 144.1</span>
-<span class="co">#&gt; Step: 45, lrate: 0.003281, wchange: 0.00050277, angledelta: 86.4</span>
-<span class="co">#&gt; Step: 46, lrate: 0.003215, wchange: 0.00091285, angledelta: 68.6</span>
-<span class="co">#&gt; Step: 47, lrate: 0.003151, wchange: 0.00199715, angledelta: 73.7</span>
-<span class="co">#&gt; Step: 48, lrate: 0.003088, wchange: 0.00328131, angledelta: 131.6</span>
-<span class="co">#&gt; Step: 49, lrate: 0.003026, wchange: 0.00129768, angledelta: 119.4</span>
-<span class="co">#&gt; Step: 50, lrate: 0.002965, wchange: 0.00065915, angledelta: 114.3</span>
-<span class="co">#&gt; Step: 51, lrate: 0.002906, wchange: 0.00161698, angledelta: 141.5</span>
-<span class="co">#&gt; Step: 52, lrate: 0.002848, wchange: 0.00096359, angledelta: 138.0</span>
-<span class="co">#&gt; Step: 53, lrate: 0.002791, wchange: 0.00039161, angledelta: 109.1</span>
-<span class="co">#&gt; Step: 54, lrate: 0.002735, wchange: 0.00077069, angledelta: 145.1</span>
-<span class="co">#&gt; Step: 55, lrate: 0.002681, wchange: 0.00118532, angledelta: 58.1</span>
-<span class="co">#&gt; Step: 56, lrate: 0.002681, wchange: 0.00032759, angledelta: 83.5</span>
-<span class="co">#&gt; Step: 57, lrate: 0.002627, wchange: 0.00244534, angledelta: 78.4</span>
-<span class="co">#&gt; Step: 58, lrate: 0.002574, wchange: 0.00106428, angledelta: 154.9</span>
-<span class="co">#&gt; Step: 59, lrate: 0.002523, wchange: 0.00012587, angledelta: 104.1</span>
-<span class="co">#&gt; Step: 60, lrate: 0.002472, wchange: 0.00116645, angledelta: 152.1</span>
-<span class="co">#&gt; Step: 61, lrate: 0.002423, wchange: 0.00053750, angledelta: 109.8</span>
-<span class="co">#&gt; Step: 62, lrate: 0.002375, wchange: 0.00339449, angledelta: 52.5</span>
-<span class="co">#&gt; Step: 63, lrate: 0.002375, wchange: 0.00083205, angledelta: 139.3</span>
-<span class="co">#&gt; Step: 64, lrate: 0.002327, wchange: 0.00253928, angledelta: 139.5</span>
-<span class="co">#&gt; Step: 65, lrate: 0.002281, wchange: 0.00191383, angledelta: 151.4</span>
-<span class="co">#&gt; Step: 66, lrate: 0.002235, wchange: 0.00166520, angledelta: 123.4</span>
-<span class="co">#&gt; Step: 67, lrate: 0.002190, wchange: 0.00038222, angledelta: 119.4</span>
-<span class="co">#&gt; Step: 68, lrate: 0.002146, wchange: 0.00037782, angledelta: 130.6</span>
-<span class="co">#&gt; Step: 69, lrate: 0.002103, wchange: 0.00081093, angledelta: 76.7</span>
-<span class="co">#&gt; Step: 70, lrate: 0.002061, wchange: 0.00052696, angledelta: 162.5</span>
-<span class="co">#&gt; Step: 71, lrate: 0.002020, wchange: 0.00078812, angledelta: 22.9</span>
-<span class="co">#&gt; Step: 72, lrate: 0.002020, wchange: 0.00077441, angledelta: 163.1</span>
-<span class="co">#&gt; Step: 73, lrate: 0.001980, wchange: 0.00023361, angledelta: 92.5</span>
-<span class="co">#&gt; Step: 74, lrate: 0.001940, wchange: 0.00136768, angledelta: 122.2</span>
-<span class="co">#&gt; Step: 75, lrate: 0.001901, wchange: 0.00055560, angledelta: 139.4</span>
-<span class="co">#&gt; Step: 76, lrate: 0.001863, wchange: 0.00134437, angledelta: 46.4</span>
-<span class="co">#&gt; Step: 77, lrate: 0.001863, wchange: 0.00179219, angledelta: 120.3</span>
-<span class="co">#&gt; Step: 78, lrate: 0.001826, wchange: 0.00212485, angledelta: 153.2</span>
-<span class="co">#&gt; Step: 79, lrate: 0.001790, wchange: 0.00085506, angledelta: 114.3</span>
-<span class="co">#&gt; Step: 80, lrate: 0.001754, wchange: 0.00009847, angledelta: 116.8</span>
-<span class="co">#&gt; Step: 81, lrate: 0.001719, wchange: 0.00018696, angledelta: 104.1</span>
-<span class="co">#&gt; Step: 82, lrate: 0.001684, wchange: 0.00086207, angledelta: 92.2</span>
-<span class="co">#&gt; Step: 83, lrate: 0.001651, wchange: 0.00008862, angledelta: 70.4</span>
-<span class="co">#&gt; Step: 84, lrate: 0.001618, wchange: 0.00014227, angledelta: 125.2</span>
-<span class="co">#&gt; Step: 85, lrate: 0.001585, wchange: 0.00043853, angledelta: 53.2</span>
-<span class="co">#&gt; Step: 86, lrate: 0.001585, wchange: 0.00045970, angledelta: 120.3</span>
-<span class="co">#&gt; Step: 87, lrate: 0.001554, wchange: 0.00039297, angledelta: 143.6</span>
-<span class="co">#&gt; Step: 88, lrate: 0.001522, wchange: 0.00002231, angledelta: 84.5</span>
-<span class="co">#&gt; Step: 89, lrate: 0.001492, wchange: 0.00022969, angledelta: 151.0</span>
-<span class="co">#&gt; Step: 90, lrate: 0.001462, wchange: 0.00059467, angledelta: 152.9</span>
-<span class="co">#&gt; Step: 91, lrate: 0.001433, wchange: 0.00002917, angledelta: 79.1</span>
-<span class="co">#&gt; Step: 92, lrate: 0.001404, wchange: 0.00037757, angledelta: 149.2</span>
-<span class="co">#&gt; Step: 93, lrate: 0.001376, wchange: 0.00025903, angledelta: 111.9</span>
-<span class="co">#&gt; Step: 94, lrate: 0.001349, wchange: 0.00005385, angledelta: 28.7</span>
-<span class="co">#&gt; Step: 95, lrate: 0.001349, wchange: 0.00025074, angledelta: 160.4</span>
-<span class="co">#&gt; Step: 96, lrate: 0.001322, wchange: 0.00014156, angledelta: 113.0</span>
-<span class="co">#&gt; Step: 97, lrate: 0.001295, wchange: 0.00016154, angledelta: 142.2</span>
-<span class="co">#&gt; Step: 98, lrate: 0.001269, wchange: 0.00038691, angledelta: 111.9</span>
-<span class="co">#&gt; Step: 99, lrate: 0.001244, wchange: 0.00035365, angledelta: 153.5</span>
-<span class="co">#&gt; Step: 100, lrate: 0.001219, wchange: 0.00001111, angledelta: 74.3</span>
-<span class="co">#&gt; Step: 101, lrate: 0.001195, wchange: 0.00002526, angledelta: 107.6</span>
-<span class="co">#&gt; Step: 102, lrate: 0.001171, wchange: 0.00027641, angledelta: 48.5</span>
-<span class="co">#&gt; Step: 103, lrate: 0.001171, wchange: 0.00011244, angledelta: 126.4</span>
-<span class="co">#&gt; Step: 104, lrate: 0.001147, wchange: 0.00001940, angledelta: 153.3</span>
-<span class="co">#&gt; Step: 105, lrate: 0.001124, wchange: 0.00000701, angledelta: 105.0</span>
-<span class="co">#&gt; Step: 106, lrate: 0.001102, wchange: 0.00004820, angledelta: 114.1</span>
-<span class="co">#&gt; Step: 107, lrate: 0.001080, wchange: 0.00003810, angledelta: 72.1</span>
-<span class="co">#&gt; Step: 108, lrate: 0.001058, wchange: 0.00003405, angledelta: 90.8</span>
-<span class="co">#&gt; Step: 109, lrate: 0.001037, wchange: 0.00008686, angledelta: 96.6</span>
-<span class="co">#&gt; Step: 110, lrate: 0.001016, wchange: 0.00002477, angledelta: 102.4</span>
-<span class="co">#&gt; Step: 111, lrate: 0.000996, wchange: 0.00003517, angledelta: 111.6</span>
-<span class="co">#&gt; Step: 112, lrate: 0.000976, wchange: 0.00012075, angledelta: 125.3</span>
-<span class="co">#&gt; Step: 113, lrate: 0.000957, wchange: 0.00003088, angledelta: 90.0</span>
-<span class="co">#&gt; Step: 114, lrate: 0.000938, wchange: 0.00009633, angledelta: 57.2</span>
-<span class="co">#&gt; Step: 115, lrate: 0.000938, wchange: 0.00008655, angledelta: 139.5</span>
-<span class="co">#&gt; Step: 116, lrate: 0.000919, wchange: 0.00006058, angledelta: 163.2</span>
-<span class="co">#&gt; Step: 117, lrate: 0.000900, wchange: 0.00000949, angledelta: 122.6</span>
-<span class="co">#&gt; Step: 118, lrate: 0.000882, wchange: 0.00002333, angledelta: 117.3</span>
-<span class="co">#&gt; Step: 119, lrate: 0.000865, wchange: 0.00002214, angledelta: 139.8</span>
-<span class="co">#&gt; Step: 120, lrate: 0.000847, wchange: 0.00003745, angledelta: 129.5</span>
-<span class="co">#&gt; Step: 121, lrate: 0.000830, wchange: 0.00003400, angledelta: 94.7</span>
-<span class="co">#&gt; Step: 122, lrate: 0.000814, wchange: 0.00005703, angledelta: 49.2</span>
-<span class="co">#&gt; Step: 123, lrate: 0.000814, wchange: 0.00003539, angledelta: 145.2</span>
-<span class="co">#&gt; Step: 124, lrate: 0.000798, wchange: 0.00008403, angledelta: 129.9</span>
-<span class="co">#&gt; Step: 125, lrate: 0.000782, wchange: 0.00012815, angledelta: 173.9</span>
-<span class="co">#&gt; Step: 126, lrate: 0.000766, wchange: 0.00000096, angledelta: 67.9</span>
-<span class="co">#&gt; Step: 127, lrate: 0.000751, wchange: 0.00004021, angledelta: 61.9</span>
-<span class="co">#&gt; Step: 128, lrate: 0.000736, wchange: 0.00001867, angledelta: 82.6</span>
-<span class="co">#&gt; Step: 129, lrate: 0.000721, wchange: 0.00005076, angledelta: 112.6</span>
-<span class="co">#&gt; Step: 130, lrate: 0.000707, wchange: 0.00001881, angledelta: 118.3</span>
-<span class="co">#&gt; Step: 131, lrate: 0.000692, wchange: 0.00004065, angledelta: 81.8</span>
-<span class="co">#&gt; Step: 132, lrate: 0.000679, wchange: 0.00003007, angledelta: 69.6</span>
-<span class="co">#&gt; Step: 133, lrate: 0.000665, wchange: 0.00003058, angledelta: 124.6</span>
-<span class="co">#&gt; Step: 134, lrate: 0.000652, wchange: 0.00003645, angledelta: 136.5</span>
-<span class="co">#&gt; Step: 135, lrate: 0.000639, wchange: 0.00000843, angledelta: 110.7</span>
-<span class="co">#&gt; Step: 136, lrate: 0.000626, wchange: 0.00000311, angledelta: 91.7</span>
-<span class="co">#&gt; Step: 137, lrate: 0.000613, wchange: 0.00000623, angledelta: 93.0</span>
-<span class="co">#&gt; Step: 138, lrate: 0.000601, wchange: 0.00000471, angledelta: 129.1</span>
-<span class="co">#&gt; Step: 139, lrate: 0.000589, wchange: 0.00000857, angledelta: 66.3</span>
-<span class="co">#&gt; Step: 140, lrate: 0.000577, wchange: 0.00001820, angledelta: 114.5</span>
-<span class="co">#&gt; Step: 141, lrate: 0.000566, wchange: 0.00003728, angledelta: 127.7</span>
-<span class="co">#&gt; Step: 142, lrate: 0.000554, wchange: 0.00000221, angledelta: 110.9</span>
-<span class="co">#&gt; Step: 143, lrate: 0.000543, wchange: 0.00000487, angledelta: 59.9</span>
-<span class="co">#&gt; Step: 144, lrate: 0.000543, wchange: 0.00001621, angledelta: 107.6</span>
-<span class="co">#&gt; Step: 145, lrate: 0.000532, wchange: 0.00000488, angledelta: 127.0</span>
-<span class="co">#&gt; Step: 146, lrate: 0.000522, wchange: 0.00000440, angledelta: 73.4</span>
-<span class="co">#&gt; Step: 147, lrate: 0.000511, wchange: 0.00001027, angledelta: 26.4</span>
-<span class="co">#&gt; Step: 148, lrate: 0.000511, wchange: 0.00002364, angledelta: 138.3</span>
-<span class="co">#&gt; Step: 149, lrate: 0.000501, wchange: 0.00000469, angledelta: 70.0</span>
-<span class="co">#&gt; Step: 150, lrate: 0.000491, wchange: 0.00000452, angledelta: 131.5</span>
-<span class="co">#&gt; Step: 151, lrate: 0.000481, wchange: 0.00000720, angledelta: 120.6</span>
-<span class="co">#&gt; Step: 152, lrate: 0.000472, wchange: 0.00002755, angledelta: 139.8</span>
-<span class="co">#&gt; Step: 153, lrate: 0.000462, wchange: 0.00000045, angledelta: 41.7</span>
-<span class="co">#&gt; Step: 154, lrate: 0.000462, wchange: 0.00000290, angledelta: 112.1</span>
-<span class="co">#&gt; Step: 155, lrate: 0.000453, wchange: 0.00001525, angledelta: 38.6</span>
-<span class="co">#&gt; Step: 156, lrate: 0.000453, wchange: 0.00000690, angledelta: 10.3</span>
-<span class="co">#&gt; Step: 157, lrate: 0.000453, wchange: 0.00002190, angledelta: 74.2</span>
-<span class="co">#&gt; Step: 158, lrate: 0.000444, wchange: 0.00001655, angledelta: 173.5</span>
-<span class="co">#&gt; Step: 159, lrate: 0.000435, wchange: 0.00000315, angledelta: 71.2</span>
-<span class="co">#&gt; Step: 160, lrate: 0.000426, wchange: 0.00000509, angledelta: 53.4</span>
-<span class="co">#&gt; Step: 161, lrate: 0.000426, wchange: 0.00000254, angledelta: 41.2</span>
-<span class="co">#&gt; ICA running time: 0.091 s</span>
+<span class="co">#&gt; Step: 1, lrate: 0.007213, wchange: 0.36359434, angledelta:  0.0</span>
+<span class="co">#&gt; Step: 2, lrate: 0.007213, wchange: 0.19365123, angledelta:  0.0</span>
+<span class="co">#&gt; Step: 3, lrate: 0.007213, wchange: 0.09511422, angledelta: 110.2</span>
+<span class="co">#&gt; Step: 4, lrate: 0.007069, wchange: 0.03416686, angledelta: 81.3</span>
+<span class="co">#&gt; Step: 5, lrate: 0.006928, wchange: 0.02498514, angledelta: 97.6</span>
+<span class="co">#&gt; Step: 6, lrate: 0.006789, wchange: 0.01697742, angledelta: 118.7</span>
+<span class="co">#&gt; Step: 7, lrate: 0.006653, wchange: 0.02123889, angledelta: 129.7</span>
+<span class="co">#&gt; Step: 8, lrate: 0.006520, wchange: 0.00283895, angledelta: 150.8</span>
+<span class="co">#&gt; Step: 9, lrate: 0.006390, wchange: 0.01162775, angledelta: 59.2</span>
+<span class="co">#&gt; Step: 10, lrate: 0.006390, wchange: 0.02386467, angledelta: 134.1</span>
+<span class="co">#&gt; Step: 11, lrate: 0.006262, wchange: 0.00867708, angledelta: 157.8</span>
+<span class="co">#&gt; Step: 12, lrate: 0.006137, wchange: 0.00576713, angledelta: 149.2</span>
+<span class="co">#&gt; Step: 13, lrate: 0.006014, wchange: 0.00288187, angledelta: 96.3</span>
+<span class="co">#&gt; Step: 14, lrate: 0.005894, wchange: 0.02666575, angledelta: 81.9</span>
+<span class="co">#&gt; Step: 15, lrate: 0.005776, wchange: 0.05167159, angledelta: 170.8</span>
+<span class="co">#&gt; Step: 16, lrate: 0.005661, wchange: 0.01612299, angledelta: 173.5</span>
+<span class="co">#&gt; Step: 17, lrate: 0.005547, wchange: 0.00023851, angledelta: 140.0</span>
+<span class="co">#&gt; Step: 18, lrate: 0.005436, wchange: 0.01612445, angledelta: 60.8</span>
+<span class="co">#&gt; Step: 19, lrate: 0.005328, wchange: 0.01383950, angledelta: 172.2</span>
+<span class="co">#&gt; Step: 20, lrate: 0.005221, wchange: 0.00415206, angledelta: 95.2</span>
+<span class="co">#&gt; Step: 21, lrate: 0.005117, wchange: 0.02188085, angledelta: 116.1</span>
+<span class="co">#&gt; Step: 22, lrate: 0.005014, wchange: 0.01145037, angledelta: 164.6</span>
+<span class="co">#&gt; Step: 23, lrate: 0.004914, wchange: 0.00203022, angledelta: 133.1</span>
+<span class="co">#&gt; Step: 24, lrate: 0.004816, wchange: 0.00598177, angledelta: 131.8</span>
+<span class="co">#&gt; Step: 25, lrate: 0.004719, wchange: 0.01116702, angledelta: 80.1</span>
+<span class="co">#&gt; Step: 26, lrate: 0.004625, wchange: 0.02218398, angledelta: 149.3</span>
+<span class="co">#&gt; Step: 27, lrate: 0.004533, wchange: 0.00826678, angledelta: 114.2</span>
+<span class="co">#&gt; Step: 28, lrate: 0.004442, wchange: 0.01499818, angledelta: 65.4</span>
+<span class="co">#&gt; Step: 29, lrate: 0.004353, wchange: 0.02627220, angledelta: 147.0</span>
+<span class="co">#&gt; Step: 30, lrate: 0.004266, wchange: 0.00692281, angledelta: 121.1</span>
+<span class="co">#&gt; Step: 31, lrate: 0.004181, wchange: 0.01051815, angledelta: 162.7</span>
+<span class="co">#&gt; Step: 32, lrate: 0.004097, wchange: 0.01415792, angledelta: 133.8</span>
+<span class="co">#&gt; Step: 33, lrate: 0.004015, wchange: 0.00013781, angledelta: 55.6</span>
+<span class="co">#&gt; Step: 34, lrate: 0.004015, wchange: 0.00465572, angledelta: 157.8</span>
+<span class="co">#&gt; Step: 35, lrate: 0.003935, wchange: 0.00066548, angledelta: 114.1</span>
+<span class="co">#&gt; Step: 36, lrate: 0.003856, wchange: 0.00385911, angledelta: 91.3</span>
+<span class="co">#&gt; Step: 37, lrate: 0.003779, wchange: 0.00126489, angledelta: 69.7</span>
+<span class="co">#&gt; Step: 38, lrate: 0.003703, wchange: 0.00098297, angledelta: 109.5</span>
+<span class="co">#&gt; Step: 39, lrate: 0.003629, wchange: 0.01516207, angledelta: 16.2</span>
+<span class="co">#&gt; Step: 40, lrate: 0.003629, wchange: 0.00373782, angledelta: 163.5</span>
+<span class="co">#&gt; Step: 41, lrate: 0.003557, wchange: 0.00006775, angledelta: 91.8</span>
+<span class="co">#&gt; Step: 42, lrate: 0.003486, wchange: 0.00582550, angledelta: 49.5</span>
+<span class="co">#&gt; Step: 43, lrate: 0.003486, wchange: 0.00408373, angledelta: 155.8</span>
+<span class="co">#&gt; Step: 44, lrate: 0.003416, wchange: 0.00143449, angledelta: 85.6</span>
+<span class="co">#&gt; Step: 45, lrate: 0.003348, wchange: 0.00083856, angledelta: 131.9</span>
+<span class="co">#&gt; Step: 46, lrate: 0.003281, wchange: 0.00152889, angledelta: 134.1</span>
+<span class="co">#&gt; Step: 47, lrate: 0.003215, wchange: 0.00064906, angledelta: 86.8</span>
+<span class="co">#&gt; Step: 48, lrate: 0.003151, wchange: 0.00172328, angledelta: 123.0</span>
+<span class="co">#&gt; Step: 49, lrate: 0.003088, wchange: 0.00165109, angledelta: 154.7</span>
+<span class="co">#&gt; Step: 50, lrate: 0.003026, wchange: 0.00040707, angledelta: 66.5</span>
+<span class="co">#&gt; Step: 51, lrate: 0.002965, wchange: 0.00087587, angledelta: 125.0</span>
+<span class="co">#&gt; Step: 52, lrate: 0.002906, wchange: 0.00314501, angledelta: 139.9</span>
+<span class="co">#&gt; Step: 53, lrate: 0.002848, wchange: 0.00173096, angledelta: 138.3</span>
+<span class="co">#&gt; Step: 54, lrate: 0.002791, wchange: 0.00093409, angledelta: 139.5</span>
+<span class="co">#&gt; Step: 55, lrate: 0.002735, wchange: 0.00094035, angledelta: 26.5</span>
+<span class="co">#&gt; Step: 56, lrate: 0.002735, wchange: 0.00452184, angledelta: 143.5</span>
+<span class="co">#&gt; Step: 57, lrate: 0.002681, wchange: 0.00780788, angledelta: 120.3</span>
+<span class="co">#&gt; Step: 58, lrate: 0.002627, wchange: 0.00576097, angledelta: 152.1</span>
+<span class="co">#&gt; Step: 59, lrate: 0.002574, wchange: 0.00261456, angledelta: 157.3</span>
+<span class="co">#&gt; Step: 60, lrate: 0.002523, wchange: 0.00101834, angledelta: 82.7</span>
+<span class="co">#&gt; Step: 61, lrate: 0.002472, wchange: 0.00125398, angledelta: 116.0</span>
+<span class="co">#&gt; Step: 62, lrate: 0.002423, wchange: 0.00330646, angledelta: 73.4</span>
+<span class="co">#&gt; Step: 63, lrate: 0.002375, wchange: 0.00321926, angledelta: 87.4</span>
+<span class="co">#&gt; Step: 64, lrate: 0.002327, wchange: 0.00201051, angledelta: 117.2</span>
+<span class="co">#&gt; Step: 65, lrate: 0.002281, wchange: 0.00105235, angledelta: 119.8</span>
+<span class="co">#&gt; Step: 66, lrate: 0.002235, wchange: 0.00038552, angledelta: 118.1</span>
+<span class="co">#&gt; Step: 67, lrate: 0.002190, wchange: 0.00044818, angledelta: 27.2</span>
+<span class="co">#&gt; Step: 68, lrate: 0.002190, wchange: 0.00043143, angledelta: 153.1</span>
+<span class="co">#&gt; Step: 69, lrate: 0.002146, wchange: 0.00004497, angledelta: 65.9</span>
+<span class="co">#&gt; Step: 70, lrate: 0.002103, wchange: 0.00098919, angledelta: 96.7</span>
+<span class="co">#&gt; Step: 71, lrate: 0.002061, wchange: 0.00038301, angledelta: 106.6</span>
+<span class="co">#&gt; Step: 72, lrate: 0.002020, wchange: 0.00116184, angledelta: 118.2</span>
+<span class="co">#&gt; Step: 73, lrate: 0.001980, wchange: 0.00005648, angledelta: 66.1</span>
+<span class="co">#&gt; Step: 74, lrate: 0.001940, wchange: 0.00029757, angledelta: 105.9</span>
+<span class="co">#&gt; Step: 75, lrate: 0.001901, wchange: 0.00043609, angledelta: 81.4</span>
+<span class="co">#&gt; Step: 76, lrate: 0.001863, wchange: 0.00035810, angledelta: 74.0</span>
+<span class="co">#&gt; Step: 77, lrate: 0.001826, wchange: 0.00003811, angledelta: 112.2</span>
+<span class="co">#&gt; Step: 78, lrate: 0.001790, wchange: 0.00072066, angledelta: 37.3</span>
+<span class="co">#&gt; Step: 79, lrate: 0.001790, wchange: 0.00022495, angledelta: 72.1</span>
+<span class="co">#&gt; Step: 80, lrate: 0.001754, wchange: 0.00027745, angledelta: 124.5</span>
+<span class="co">#&gt; Step: 81, lrate: 0.001719, wchange: 0.00043296, angledelta: 108.1</span>
+<span class="co">#&gt; Step: 82, lrate: 0.001684, wchange: 0.00045883, angledelta: 116.6</span>
+<span class="co">#&gt; Step: 83, lrate: 0.001651, wchange: 0.00000581, angledelta: 126.6</span>
+<span class="co">#&gt; Step: 84, lrate: 0.001618, wchange: 0.00020872, angledelta: 71.3</span>
+<span class="co">#&gt; Step: 85, lrate: 0.001585, wchange: 0.00032658, angledelta: 102.8</span>
+<span class="co">#&gt; Step: 86, lrate: 0.001554, wchange: 0.00033670, angledelta: 155.4</span>
+<span class="co">#&gt; Step: 87, lrate: 0.001522, wchange: 0.00005696, angledelta: 73.9</span>
+<span class="co">#&gt; Step: 88, lrate: 0.001492, wchange: 0.00019419, angledelta: 65.6</span>
+<span class="co">#&gt; Step: 89, lrate: 0.001462, wchange: 0.00025877, angledelta: 106.1</span>
+<span class="co">#&gt; Step: 90, lrate: 0.001433, wchange: 0.00015432, angledelta: 80.0</span>
+<span class="co">#&gt; Step: 91, lrate: 0.001404, wchange: 0.00005524, angledelta: 136.0</span>
+<span class="co">#&gt; Step: 92, lrate: 0.001376, wchange: 0.00018209, angledelta: 20.2</span>
+<span class="co">#&gt; Step: 93, lrate: 0.001376, wchange: 0.00015176, angledelta: 99.8</span>
+<span class="co">#&gt; Step: 94, lrate: 0.001349, wchange: 0.00003896, angledelta: 100.1</span>
+<span class="co">#&gt; Step: 95, lrate: 0.001322, wchange: 0.00025793, angledelta: 171.3</span>
+<span class="co">#&gt; Step: 96, lrate: 0.001295, wchange: 0.00001608, angledelta: 160.3</span>
+<span class="co">#&gt; Step: 97, lrate: 0.001269, wchange: 0.00020102, angledelta: 39.2</span>
+<span class="co">#&gt; Step: 98, lrate: 0.001269, wchange: 0.00008066, angledelta: 120.6</span>
+<span class="co">#&gt; Step: 99, lrate: 0.001244, wchange: 0.00020029, angledelta: 110.9</span>
+<span class="co">#&gt; Step: 100, lrate: 0.001219, wchange: 0.00016114, angledelta: 119.6</span>
+<span class="co">#&gt; Step: 101, lrate: 0.001195, wchange: 0.00004139, angledelta: 97.3</span>
+<span class="co">#&gt; Step: 102, lrate: 0.001171, wchange: 0.00006153, angledelta: 134.2</span>
+<span class="co">#&gt; Step: 103, lrate: 0.001147, wchange: 0.00007536, angledelta: 50.4</span>
+<span class="co">#&gt; Step: 104, lrate: 0.001147, wchange: 0.00002267, angledelta: 81.5</span>
+<span class="co">#&gt; Step: 105, lrate: 0.001124, wchange: 0.00014107, angledelta: 131.2</span>
+<span class="co">#&gt; Step: 106, lrate: 0.001102, wchange: 0.00032466, angledelta: 119.0</span>
+<span class="co">#&gt; Step: 107, lrate: 0.001080, wchange: 0.00001987, angledelta: 158.6</span>
+<span class="co">#&gt; Step: 108, lrate: 0.001058, wchange: 0.00004797, angledelta: 32.3</span>
+<span class="co">#&gt; Step: 109, lrate: 0.001058, wchange: 0.00004800, angledelta: 138.8</span>
+<span class="co">#&gt; Step: 110, lrate: 0.001037, wchange: 0.00010454, angledelta: 71.3</span>
+<span class="co">#&gt; Step: 111, lrate: 0.001016, wchange: 0.00009572, angledelta: 100.9</span>
+<span class="co">#&gt; Step: 112, lrate: 0.000996, wchange: 0.00007422, angledelta: 109.0</span>
+<span class="co">#&gt; Step: 113, lrate: 0.000976, wchange: 0.00014677, angledelta: 118.2</span>
+<span class="co">#&gt; Step: 114, lrate: 0.000957, wchange: 0.00020300, angledelta: 138.7</span>
+<span class="co">#&gt; Step: 115, lrate: 0.000938, wchange: 0.00004355, angledelta: 79.5</span>
+<span class="co">#&gt; Step: 116, lrate: 0.000919, wchange: 0.00000647, angledelta: 107.4</span>
+<span class="co">#&gt; Step: 117, lrate: 0.000900, wchange: 0.00011157, angledelta: 126.8</span>
+<span class="co">#&gt; Step: 118, lrate: 0.000882, wchange: 0.00004097, angledelta: 149.3</span>
+<span class="co">#&gt; Step: 119, lrate: 0.000865, wchange: 0.00002295, angledelta: 95.2</span>
+<span class="co">#&gt; Step: 120, lrate: 0.000847, wchange: 0.00000989, angledelta: 130.9</span>
+<span class="co">#&gt; Step: 121, lrate: 0.000830, wchange: 0.00019410, angledelta: 46.7</span>
+<span class="co">#&gt; Step: 122, lrate: 0.000830, wchange: 0.00009780, angledelta: 100.4</span>
+<span class="co">#&gt; Step: 123, lrate: 0.000814, wchange: 0.00001492, angledelta: 163.1</span>
+<span class="co">#&gt; Step: 124, lrate: 0.000798, wchange: 0.00002371, angledelta: 77.8</span>
+<span class="co">#&gt; Step: 125, lrate: 0.000782, wchange: 0.00001153, angledelta: 63.0</span>
+<span class="co">#&gt; Step: 126, lrate: 0.000766, wchange: 0.00003381, angledelta: 115.7</span>
+<span class="co">#&gt; Step: 127, lrate: 0.000751, wchange: 0.00006892, angledelta: 161.5</span>
+<span class="co">#&gt; Step: 128, lrate: 0.000736, wchange: 0.00004359, angledelta: 133.5</span>
+<span class="co">#&gt; Step: 129, lrate: 0.000721, wchange: 0.00003540, angledelta: 35.5</span>
+<span class="co">#&gt; Step: 130, lrate: 0.000721, wchange: 0.00005387, angledelta: 59.9</span>
+<span class="co">#&gt; Step: 131, lrate: 0.000721, wchange: 0.00000907, angledelta: 128.8</span>
+<span class="co">#&gt; Step: 132, lrate: 0.000707, wchange: 0.00004767, angledelta: 27.7</span>
+<span class="co">#&gt; Step: 133, lrate: 0.000707, wchange: 0.00006769, angledelta: 79.8</span>
+<span class="co">#&gt; Step: 134, lrate: 0.000692, wchange: 0.00003918, angledelta: 141.7</span>
+<span class="co">#&gt; Step: 135, lrate: 0.000679, wchange: 0.00000582, angledelta: 135.5</span>
+<span class="co">#&gt; Step: 136, lrate: 0.000665, wchange: 0.00005877, angledelta: 33.6</span>
+<span class="co">#&gt; Step: 137, lrate: 0.000665, wchange: 0.00003623, angledelta: 160.8</span>
+<span class="co">#&gt; Step: 138, lrate: 0.000652, wchange: 0.00003307, angledelta: 153.8</span>
+<span class="co">#&gt; Step: 139, lrate: 0.000639, wchange: 0.00004758, angledelta: 145.3</span>
+<span class="co">#&gt; Step: 140, lrate: 0.000626, wchange: 0.00001668, angledelta: 123.7</span>
+<span class="co">#&gt; Step: 141, lrate: 0.000613, wchange: 0.00000751, angledelta: 47.4</span>
+<span class="co">#&gt; Step: 142, lrate: 0.000613, wchange: 0.00000322, angledelta: 41.5</span>
+<span class="co">#&gt; Step: 143, lrate: 0.000613, wchange: 0.00003160, angledelta: 125.6</span>
+<span class="co">#&gt; Step: 144, lrate: 0.000601, wchange: 0.00003584, angledelta: 81.8</span>
+<span class="co">#&gt; Step: 145, lrate: 0.000589, wchange: 0.00002638, angledelta: 25.5</span>
+<span class="co">#&gt; ICA running time: 0.08 s</span>
 <span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">time_x</span>,
      <span class="va">dat_out</span><span class="op">$</span><span class="va">S</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>,
-     type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></pre></div>
+     type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-3-1.png" width="100%"></p>
-<div class="sourceCode" id="cb8"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">time_x</span>,
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">time_x</span>,
      <span class="va">dat_out</span><span class="op">$</span><span class="va">S</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>,
-     type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></pre></div>
+     type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-3-2.png" width="100%"></p>
 </div>
 <div id="references" class="section level2">
@@ -311,7 +297,7 @@
   <div class="dev-status">
 <h2>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://codecov.io/gh/craddm/infomax?branch=master"><img src="https://codecov.io/gh/craddm/infomax/branch/master/graph/badge.svg" alt="Codecov test coverage"></a></li>
+<li><a href="https://www.tidyverse.org/lifecycle/#experimental"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
 </ul>
 </div>
 </div>
