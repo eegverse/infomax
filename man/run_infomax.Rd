@@ -21,7 +21,7 @@ run_infomax(
 )
 }
 \arguments{
-\item{x}{Matrix of data to be decomposed; features in columns, samples in rows.}
+\item{x}{matrix of data; features in columns, samples in rows.}
 
 \item{centre}{Mean-centre columns before running the algorithm. Defaults to
 TRUE.}
@@ -61,15 +61,32 @@ A list containing:
 }
 \description{
 Run Infomax or extended-Infomax on a matrix of data. Uses a mini-batch stochastic
-gradient descent algorithm to
-}
-\details{
-The matrix can be prewhitened in several ways. The default is to perform
+gradient descent algorithm. The matrix can be prewhitened in several ways. The default is to perform
 sphering using the inverse of the square root of the covariance matrix of the
 original data, the method used by the 'EEGLAB' and 'MNE-Python' toolboxes in
 other languages. Whitening methods implemented in the package \code{whitening} are
 \code{PCA}, \code{ZCA}, \code{ZCA-cor}, and \code{PCA-cor}. Please see the \code{whitening} package
 for further information on their implementation of these methods.
+}
+\examples{
+time_x <- seq(0, 1, by = 1/256)
+source_a <- sin(2 * pi * 5 * time_x)
+source_b <- sin(2 * pi * 10 * time_x)
+plot(time_x, source_a, type = "l")
+plot(time_x, source_b, type = "l")
+plot(time_x, source_a + 2 * source_b, type = "l")
+plot(time_x, source_a * 3.4 + 1.5 * source_b, type = "l")
+mixed_data <- matrix(NA,
+    nrow = length(time_x),
+    ncol = 2)
+mixed_data[, 1] <- source_a + 2 * source_b
+mixed_data[, 2] <- source_a * 3.4 + 1.5 * source_b
+dat_out <- run_infomax(mixed_data, whiten = "PCA")
+plot(time_x, dat_out$S[, 1],
+    type = "l")
+plot(time_x,
+     dat_out$S[, 2],
+     type = "l")
 }
 \references{
 \itemize{
