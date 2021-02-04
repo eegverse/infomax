@@ -7,7 +7,6 @@
 ## usethis namespace: end
 NULL
 
-
 utils::globalVariables(c("BI",
                          "lrate",
                          "n_comps",
