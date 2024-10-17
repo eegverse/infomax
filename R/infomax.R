@@ -278,28 +278,23 @@ ext_in <- function(x,
 
   }
 
+  # Pre-allocate matrices outside the loop
+  u <- matrix(0, nrow = blocksize, ncol = n_comps)
+  y <- matrix(0, nrow = blocksize, ncol = n_comps)
+
   while (iter < maxiter) {
-    # shuffle timepoints
-    perms <- sample.int(nrow(x))
-    for (t in seq(1, lastt, by = blocksize)) {
-      this_set <- perms[t:(t + blocksize - 1)]
-      u <- x[this_set, ] %*% weights
-      u <- u + matrix(bias[, 1],
-                       blocksize,
-                       n_comps,
-                       byrow = TRUE)
+    # Use integer indexing for perms
+    perms <- as.integer(sample.int(nrow(x)))
+    for (t in seq(1L, lastt, by = blocksize)) {
+      this_set <- perms[t:(t + blocksize - 1L)]
+      
+      # Use optimized matrix operations
+      u[] <- x[this_set, , drop = FALSE] %*% weights + rep(bias, each = blocksize)
+      y[] <- loss_fun(u)
 
-      y <- loss_fun(u)
-
-      #weights <- weights + lrate * weights %*% (BI - matrix(signs, n_comps, n_comps, byrow = TRUE) * crossprod(u, y) - crossprod(u))
-
-      weights <- weights + lrate * update_weights(weights,
-                                                  BI,
-                                                  signs,
-                                                  n_comps,
-                                                  u,
-                                                  y)
-      bias <- bias + lrate * bias_fun(y) #colSums(y) * -2
+      # Use in-place matrix multiplication
+      weights <- weights + lrate * update_weights(weights, BI, signs, n_comps, u, y)
+      bias <- bias + lrate * bias_fun(y)
 
       # check weights
       if (max(abs(weights)) > max_weight) {
@@ -439,4 +434,5 @@ do_whitening <- function(x,
   list(x_white = x_white,
        white_cov = white_cov)
 }
+
 
