@@ -110,7 +110,15 @@ run_infomax <- function(x,
 
   # Train ICA
   start_time <- proc.time()
-  rotation_mat <- ext_in(whitened_data$x_white, blocksize, lrate, maxiter, annealdeg, anneal, tol, verbose)
+  rotation_mat <- ext_in(whitened_data$x_white,
+                         blocksize = blocksize,
+                         lrate = lrate, maxiter = maxiter,
+                         annealdeg = annealdeg,
+                         annealstep = anneal,
+                         tol = tol,
+                         extended = extended,
+                         kurt_size = kurtsize,
+                         verbose = verbose)
 
   # Calculate mixing and unmixing matrices
   unmix_mat <- crossprod(rotation_mat$weights, whitened_data$white_cov)
