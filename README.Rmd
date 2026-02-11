@@ -19,8 +19,8 @@ knitr::opts_chunk$set(
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
 
 [![R-CMD-check](https://github.com/craddm/infomax/workflows/R-CMD-check/badge.svg)](https://github.com/craddm/infomax/actions)
-
 [![codecov](https://codecov.io/gh/craddm/infomax/branch/master/graph/badge.svg?token=8VYL66NE7Z)](https://codecov.io/gh/craddm/infomax)
+[![R-CMD-check](https://github.com/eegverse/infomax/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/eegverse/infomax/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The `infomax` package is an R implementation of the Infomax and Extended Infomax algorithms (Bell & Sejnowski, 1995; Makeig, Bell, Jung, & Sejnowski, 1996) for Independent Component Analysis. 
@@ -47,7 +47,7 @@ ICA can be used to separate linear mixtures of different, independent signal sou
 
 In the example below, we generate two independent signals and then mix them together.
 
-```{r}
+```{r make-example-objects}
 time_x <- seq(0, 1, by = 1/256)
 source_a <- sin(2 * pi * 5 * time_x)
 source_b <- sin(2 * pi * 10 * time_x)
@@ -59,7 +59,7 @@ plot(time_x, source_a * 3.4 + 1.5 * source_b, type = "l")
 
 The function returns the estimated mixing matrix, unmixing matrix, and unmixed source timecourses.
 
-```{r}
+```{r example-figures}
 mixed_data <- matrix(NA,
                      nrow = length(time_x),
                      ncol = 2)

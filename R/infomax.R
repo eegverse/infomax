@@ -77,107 +77,73 @@ run_infomax <- function(x,
                         verbose = TRUE) {
 
   x <- as.matrix(x)
-  whiten <- match.arg(whiten,
-                      c("sqrtm",
-                        "ZCA",
-                        "PCA",
-                        "ZCA-cor",
-                        "PCA-cor",
-                        "none"))
+  whiten <- match.arg(whiten)
 
-  if (is.null(pca)) {
-    if (Matrix::rankMatrix(x) < ncol(x)) {
-      stop("Matrix is not full rank.")
-    }
+  # Check matrix rank
+  if (is.null(pca) && Matrix::rankMatrix(x) < ncol(x)) {
+    stop("Matrix is not full rank.")
   }
 
-  # heuristic from EEGLAB; mne uses floor(sqrt(n_samps / 3))
-  if (is.null(blocksize)) {
-    blocksize <-
-      ceiling(min(5 * log(nrow(x)),
-                  0.3 * nrow(x)))
-  }
+  # Set blocksize if not provided
+  blocksize <- ifelse(is.null(blocksize), ceiling(min(5 * log(nrow(x)), 0.3 * nrow(x))), blocksize)
 
-  # # 1. remove column means
+  # Center the data if required
   if (centre) {
-   x <- scale(x, scale = FALSE)
-   if (verbose) {
-     message("Removing column means...")
-   }
+    x <- scale(x, scale = FALSE)
+    if (verbose) message("Removing column means...")
   }
 
-  # 2. perform pca if necessary
-  if (!is.null(pca)) {
+  # Perform PCA if specified
+  pca_decomp <- if (!is.null(pca)) {
     pca_decomp <- eigen(stats::cov(x))
-    eigenvals <- pca_decomp$values
-    pca_decomp <- pca_decomp$vectors
-    x_o <- x
-    x <- x %*% pca_decomp[, 1:pca]
-    pca_flag <- TRUE
-    ncomp <- pca
+    x <- x %*% pca_decomp$vectors[, 1:pca]
+    pca_decomp
   } else {
-    pca_flag <- FALSE
-    ncomp <- ncol(x)
+    NULL
   }
 
-  # Use mne-python lrate heuristic
-  if (is.null(lrate)) {
-    lrate <- .01 / log(ncomp^2)
-  }
+  # Set initial learning rate if not provided
+  lrate <- ifelse(is.null(lrate), .01 / log(ncol(x)^2), lrate)
 
-  # 3. perform whitening/sphering
-  whitened_data <- do_whitening(x,
-                                whiten)
+  # Whitening the data
+  whitened_data <- do_whitening(x, whiten)
 
-  # 4. Train ICA
+  # Train ICA
   start_time <- proc.time()
-  rotation_mat <-
-    ext_in(whitened_data$x_white,
-           blocksize = blocksize,
-           lrate = lrate,
-           maxiter = maxiter,
-           annealdeg = annealdeg,
-           annealstep = anneal,
-           tol = tol,
-           verbose = verbose)
+  rotation_mat <- ext_in(whitened_data$x_white,
+                         blocksize = blocksize,
+                         lrate = lrate, maxiter = maxiter,
+                         annealdeg = annealdeg,
+                         annealstep = anneal,
+                         tol = tol,
+                         extended = extended,
+                         kurt_size = kurtsize,
+                         verbose = verbose)
 
-  unmix_mat <- crossprod(rotation_mat$weights,
-                         whitened_data$white_cov)
-  mixing_mat <- MASS::ginv(unmix_mat,
-                           tol = 0)
+  # Calculate mixing and unmixing matrices
+  unmix_mat <- crossprod(rotation_mat$weights, whitened_data$white_cov)
+  mixing_mat <- MASS::ginv(unmix_mat, tol = 0)
 
-  if (pca_flag) {
-    mixing_mat <- pca_decomp[, 1:pca] %*% mixing_mat
+  if (!is.null(pca_decomp)) {
+    mixing_mat <- pca_decomp$vectors[, 1:ncol(x)] %*% mixing_mat
   }
 
+  # Variance accounted for (VAF)
   comp_var <- colSums(mixing_mat^2)
   vafs <- comp_var / sum(comp_var)
-  vaf_order <-
-    sort(vafs,
-       decreasing = TRUE,
-       index.return = TRUE)$ix
-  mixing_mat <- mixing_mat[, vaf_order]
+  mixing_mat <- mixing_mat[, order(vafs, decreasing = TRUE)]
 
-  unmixing_mat <- t(MASS::ginv(mixing_mat,
-                               tol = 0))
-
-  if (pca_flag) {
-     x <- x_o
-  }
+  unmixing_mat <- t(MASS::ginv(mixing_mat, tol = 0))
 
   if (verbose) {
-    end_time <-  proc.time() - start_time
-    message(paste0("ICA running time: ",
-                   round(end_time[[3]], 3),
-                   " s"))
+    end_time <- proc.time() - start_time
+    message(sprintf("ICA running time: %.3f s", end_time[[3]]))
   }
 
   S <- x %*% unmixing_mat
   colnames(S) <- sprintf("Comp%03d", 1:ncol(S))
-  list(M = mixing_mat,
-       W = unmixing_mat,
-       S = S,
-       iter = rotation_mat$iter)
+
+  list(M = mixing_mat, W = unmixing_mat, S = S, iter = rotation_mat$iter)
 }
 
 ext_in <- function(x,

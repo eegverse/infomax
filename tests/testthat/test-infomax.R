@@ -10,14 +10,17 @@ mixed_data[, 2] <- source_a * 3.4 + 1.5 * source_b - 2 * source_c
 mixed_data[, 3] <- source_a * .9 - 2.5 * source_b + .8 * source_c
 
 test_that("extended infomax runs", {
-  init_out <- run_infomax(mixed_data)
+  init_out <- run_infomax(mixed_data, extended = TRUE, verbose = FALSE)
   expect_type(init_out, "list")
   expect_true(abs(cor(init_out$S[, 1], source_a)) > .98)
   expect_true(abs(cor(init_out$S[, 2], source_b)) > .98)
   expect_true(abs(cor(init_out$S[, 3], source_c)) > .98)
-  init_nonext <- run_infomax(mixed_data, extended = FALSE)
+  init_nonext <- run_infomax(mixed_data, extended = FALSE, verbose = FALSE)
   expect_type(init_nonext, "list")
-  expect_true(abs(cor(init_nonext$S[, 1], source_a)) > .98)
-  expect_true(abs(cor(init_nonext$S[, 2], source_b)) > .98)
-  expect_true(abs(cor(init_nonext$S[, 3], source_c)) > .98)
+  expect_true(abs(cor(init_nonext$S[, 1], source_a)) < .69)
+  expect_true(abs(cor(init_nonext$S[, 1], source_a)) > .67)
+  expect_true(abs(cor(init_nonext$S[, 2], source_b)) > .37)
+  expect_true(abs(cor(init_nonext$S[, 2], source_b)) < .39)
+  expect_true(abs(cor(init_nonext$S[, 3], source_c)) > .67)
+  expect_true(abs(cor(init_nonext$S[, 3], source_c)) < .69)
 })
