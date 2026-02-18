@@ -12,12 +12,12 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // ext_in_cpp
-List ext_in_cpp(arma::mat x, int maxiter, int blocksize, double lrate, int kurt_size, double annealdeg, double annealstep, double tol, bool extended, bool verbose);
+List ext_in_cpp(const arma::mat& x, int maxiter, int blocksize, double lrate, int kurt_size, double annealdeg, double annealstep, double tol, bool extended, bool verbose);
 RcppExport SEXP _infomax_ext_in_cpp(SEXP xSEXP, SEXP maxiterSEXP, SEXP blocksizeSEXP, SEXP lrateSEXP, SEXP kurt_sizeSEXP, SEXP annealdegSEXP, SEXP annealstepSEXP, SEXP tolSEXP, SEXP extendedSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type x(xSEXP);
     Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
     Rcpp::traits::input_parameter< int >::type blocksize(blocksizeSEXP);
     Rcpp::traits::input_parameter< double >::type lrate(lrateSEXP);

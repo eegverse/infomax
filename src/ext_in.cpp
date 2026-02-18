@@ -1,4 +1,5 @@
 // [[Rcpp::depends(RcppArmadillo)]]
+#define ARMA_DONT_USE_OPENMP
 #include <RcppArmadillo.h>
 using namespace Rcpp;
 
@@ -21,7 +22,7 @@ using namespace Rcpp;
 //' @return A list with \code{weights} (n_comps x n_comps) and \code{iter} (int).
 //' @keywords internal
 // [[Rcpp::export]]
-List ext_in_cpp(arma::mat x,
+List ext_in_cpp(const arma::mat& x,
                 int maxiter,
                 int blocksize,
                 double lrate,
@@ -77,8 +78,25 @@ List ext_in_cpp(arma::mat x,
 
   kurt_size = std::min(kurt_size, n_samps);
 
+  // Cache signs as rowvec for each_row() scaling; updated only when signs change
+  arma::rowvec signs_r = signs.t();
+
+  // Use R's RNG for reproducible, consistent behaviour with the R backend
+  auto r_randperm = [&](int n) -> arma::uvec {
+    Rcpp::IntegerVector p = Rcpp::sample(n, n, false);
+    arma::uvec out(n);
+    for (int i = 0; i < n; i++) out[i] = (arma::uword)(p[i] - 1);
+    return out;
+  };
+  auto r_randsamp = [&](int n, int k) -> arma::uvec {
+    Rcpp::IntegerVector p = Rcpp::sample(n, k, false);
+    arma::uvec out(k);
+    for (int i = 0; i < k; i++) out[i] = (arma::uword)(p[i] - 1);
+    return out;
+  };
+
   while (iter < maxiter) {
-    arma::uvec perms = arma::randperm(n_samps);
+    arma::uvec perms = r_randperm(n_samps);
     blowup = false;
 
     for (int t = 0; t <= lastt; t += blocksize) {
@@ -90,18 +108,22 @@ List ext_in_cpp(arma::mat x,
 
       arma::mat grad;
       if (extended) {
-        arma::mat y = arma::tanh(u);
-        // Use diagmat(signs) instead of a full n_comps^2 broadcast matrix
-        grad = BI - (u.t() * y) * arma::diagmat(signs) - u.t() * u;
+        arma::mat ut = u.t();
+        arma::mat y  = arma::tanh(u);
+        arma::mat uy = ut * y;
+        uy.each_row() %= signs_r;      // column-scale by signs, no diagmat alloc
+        grad = BI - uy - ut * u;
 
         W += lrate * W * grad;
         bias -= 2.0 * lrate * arma::sum(y, 0).t();
       } else {
-        arma::mat y = 1.0 / (1.0 + arma::exp(-u));
-        grad = BI + u.t() * (1.0 - 2.0 * y);
+        arma::mat y        = 1.0 / (1.0 + arma::exp(-u));
+        arma::mat one_m_2y = 1.0 - 2.0 * y;   // compute once, reuse twice
+        arma::mat ut       = u.t();
+        grad = BI + ut * one_m_2y;
 
         W += lrate * W * grad;
-        bias += lrate * arma::sum(1.0 - 2.0 * y, 0).t();
+        bias += lrate * arma::sum(one_m_2y, 0).t();
       }
 
       if (arma::abs(W).max() > max_weight) {
@@ -113,7 +135,7 @@ List ext_in_cpp(arma::mat x,
       if (extended && extblocks > 0 && blockno % extblocks == 0) {
         arma::mat test_act;
         if (kurt_size < n_samps) {
-          arma::uvec kidx = arma::randperm(n_samps, kurt_size);
+          arma::uvec kidx = r_randsamp(n_samps, kurt_size);
           test_act = x_t.cols(kidx).t() * W;
         } else {
           test_act = x * W;
@@ -136,7 +158,8 @@ List ext_in_cpp(arma::mat x,
           signcount = 0;
         }
         oldsigns = new_signs;
-        signs = new_signs;
+        signs    = new_signs;
+        signs_r  = signs.t();
 
         if (signcount >= signcount_threshold) {
           extblocks = (int)(extblocks * signcount_step);
@@ -208,12 +231,12 @@ List ext_in_cpp(arma::mat x,
       oldchange = 0.0;
       bias = arma::zeros<arma::vec>(n_comps);
       extblocks = 0;
-      signs = arma::ones<arma::vec>(n_comps);
+      signs    = arma::ones<arma::vec>(n_comps);
       signs(0) = -1.0;
+      signs_r  = signs.t();
       oldsigns = arma::zeros<arma::vec>(n_comps);
       old_kurt = arma::zeros<arma::vec>(n_comps);
       signcount = 0;
-      count_small_angle = 0;
     }
   }
 

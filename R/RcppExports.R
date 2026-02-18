@@ -20,6 +20,6 @@
 #' @return A list with \code{weights} (n_comps x n_comps) and \code{iter} (int).
 #' @keywords internal
 ext_in_cpp <- function(x, maxiter, blocksize, lrate, kurt_size, annealdeg, annealstep, tol, extended, verbose) {
-    .Call('_infomax_ext_in_cpp', PACKAGE = 'infomax', x, maxiter, blocksize, lrate, kurt_size, annealdeg, annealstep, tol, extended, verbose)
+    .Call(`_infomax_ext_in_cpp`, x, maxiter, blocksize, lrate, kurt_size, annealdeg, annealstep, tol, extended, verbose)
 }
 
