@@ -1,7 +1,7 @@
 Package: infomax
 Type: Package
 Title: Infomax Independent Component Analysis
-Version: 0.1.0
+Version: 0.2.0.9000
 Authors@R: c(person("Matt", "Craddock", email = "matt@mattcraddock.com", role = c("aut", "cre")), person("Scott", "Makeig et al., SCCN/INC/UCSD", email = "scott@sccn.ucsd.ed", role = c("cph")))
 Description: Implements Infomax and Extended Infomax Independent Component Analysis (ICA).
  A reimplementation of the mini-batch gradient descent algorithm found in 'EEGLAB'
