@@ -97,6 +97,7 @@ run_infomax <- function(x,
   }
 
   # Perform PCA if specified
+  x_orig <- x
   pca_decomp <- if (!is.null(pca)) {
     pca_decomp <- eigen(stats::cov(x))
     x <- x %*% pca_decomp$vectors[, 1:pca]
@@ -157,7 +158,7 @@ run_infomax <- function(x,
     message(sprintf("ICA running time: %.3f s", end_time[[3]]))
   }
 
-  S <- x %*% unmixing_mat
+  S <- x_orig %*% unmixing_mat
   colnames(S) <- sprintf("Comp%03d", 1:ncol(S))
 
   list(M = mixing_mat, W = unmixing_mat, S = S, iter = rotation_mat$iter)
