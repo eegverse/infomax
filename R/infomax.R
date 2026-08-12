@@ -11,13 +11,16 @@
 #' @param x matrix of data; features in columns, samples in rows.
 #' @param centre Mean-centre columns before running the algorithm. Defaults to
 #'   TRUE.
-#' @param pca A scalar. Use PCA dimensionality reduction. Often helpful when the
-#'   data is rank deficient.
+#' @param pca A whole number of components to retain with PCA dimensionality
+#'   reduction. Must be at least two and no greater than the processed data rank.
+#'   Often helpful when the data is rank deficient.
 #' @param anneal Annealing rate at which learning rate reduced.
 #' @param annealdeg Angle at which learning rate reduced.
 #' @param tol Tolerance for convergence of ICA. Defaults to 1e-07.
-#' @param lrate Initial learning rate. NULL
-#' @param blocksize Size of blocks of data used for learning.
+#' @param lrate Initial learning rate. When `NULL`, a heuristic based on the
+#'   number of components is used.
+#' @param blocksize Size of blocks of data used for learning. Must be a whole
+#'   number between one and the number of samples.
 #' @param kurtsize Size of blocks for kurtosis checking. Defaults to 6000 or
 #'   length of data, whichever is smaller.
 #' @param maxiter Maximum number of iterations. Defaults to 200.
@@ -53,8 +56,8 @@
 #' Press, Cambridge, MA (1996).
 #' @return A list containing:
 #' * **S**:  Matrix of source estimates
-#' * **M**:  Estimated mixing matrix
-#' * **W**:  Estimated unmixing matrix
+#' * **M**:  Estimated mixing matrix (features by components)
+#' * **W**:  Estimated unmixing matrix (features by components)
 #' * **iter**: Number of iterations completed
 #' @export
 run_infomax <- function(x,
@@ -77,15 +80,63 @@ run_infomax <- function(x,
                         verbose = TRUE) {
 
   x <- as.matrix(x)
+  feature_names <- colnames(x)
   whiten <- match.arg(whiten)
 
-  # Check matrix rank
-  if (is.null(pca) && Matrix::rankMatrix(x) < ncol(x)) {
-    stop("Matrix is not full rank.")
+  if (!is.numeric(x) || length(dim(x)) != 2L) {
+    stop("`x` must be a numeric matrix.", call. = FALSE)
+  }
+  if (nrow(x) < 2L || ncol(x) < 2L) {
+    stop("`x` must contain at least two samples and two features.",
+         call. = FALSE)
+  }
+  if (anyNA(x) || any(!is.finite(x))) {
+    stop("`x` must not contain missing or infinite values.", call. = FALSE)
+  }
+
+  check_flag <- function(value, name) {
+    if (!is.logical(value) || length(value) != 1L || is.na(value)) {
+      stop(sprintf("`%s` must be TRUE or FALSE.", name), call. = FALSE)
+    }
+  }
+  check_scalar <- function(value, name, lower, upper = Inf,
+                           integer = FALSE, lower_open = FALSE) {
+    valid <- is.numeric(value) && length(value) == 1L && is.finite(value)
+    if (valid) {
+      valid_lower <- if (lower_open) value > lower else value >= lower
+      valid <- valid_lower && value <= upper && (!integer || value == floor(value))
+    }
+    if (!valid) {
+      qualifier <- if (integer) "a whole number" else "a number"
+      stop(sprintf("`%s` must be %s between %s%s and %s.",
+                   name, qualifier, if (lower_open) "> " else "", lower, upper),
+           call. = FALSE)
+    }
+  }
+
+  check_flag(centre, "centre")
+  check_flag(extended, "extended")
+  check_flag(verbose, "verbose")
+  check_scalar(anneal, "anneal", 0, 1, lower_open = TRUE)
+  check_scalar(annealdeg, "annealdeg", 0, 180)
+  check_scalar(tol, "tol", 0, lower_open = TRUE)
+  check_scalar(kurtsize, "kurtsize", 1, integer = TRUE)
+  check_scalar(maxiter, "maxiter", 1, integer = TRUE)
+
+  if (!is.null(pca)) {
+    check_scalar(pca, "pca", 2, ncol(x), integer = TRUE)
+    pca <- as.integer(pca)
+  }
+  if (!is.null(lrate)) {
+    check_scalar(lrate, "lrate", 0, lower_open = TRUE)
   }
 
   # Set blocksize if not provided
-  blocksize <- ifelse(is.null(blocksize), ceiling(min(5 * log(nrow(x)), 0.3 * nrow(x))), blocksize)
+  if (is.null(blocksize)) {
+    blocksize <- ceiling(min(5 * log(nrow(x)), 0.3 * nrow(x)))
+  }
+  check_scalar(blocksize, "blocksize", 1, nrow(x), integer = TRUE)
+  blocksize <- as.integer(blocksize)
 
   # Center the data if required
   if (centre) {
@@ -93,9 +144,22 @@ run_infomax <- function(x,
     if (verbose) message("Removing column means...")
   }
 
+  # Check the rank of the data actually supplied to PCA/ICA. Centering can
+  # reduce rank, so checking the uncentered input is insufficient.
+  data_rank <- as.integer(Matrix::rankMatrix(x))
+  if (is.null(pca) && data_rank < ncol(x)) {
+    stop("Matrix is not full rank; use `pca` to reduce its dimensionality.",
+         call. = FALSE)
+  }
+  if (!is.null(pca) && pca > data_rank) {
+    stop(sprintf("`pca` must not exceed the processed data rank (%d).", data_rank),
+         call. = FALSE)
+  }
+
   # Perform PCA if specified
   pca_decomp <- if (!is.null(pca)) {
     pca_decomp <- eigen(stats::cov(x))
+    x_original_space <- x
     x <- x %*% pca_decomp$vectors[, 1:pca]
     pca_decomp
   } else {
@@ -103,7 +167,9 @@ run_infomax <- function(x,
   }
 
   # Set initial learning rate if not provided
-  lrate <- ifelse(is.null(lrate), .01 / log(ncol(x)^2), lrate)
+  if (is.null(lrate)) {
+    lrate <- .01 / log(ncol(x)^2)
+  }
 
   # Whitening the data
   whitened_data <- do_whitening(x, whiten)
@@ -134,12 +200,17 @@ run_infomax <- function(x,
   mixing_mat <- mixing_mat[, order(vafs, decreasing = TRUE)]
 
   unmixing_mat <- t(MASS::ginv(mixing_mat, tol = 0))
+  rownames(mixing_mat) <- feature_names
+  rownames(unmixing_mat) <- feature_names
 
   if (verbose) {
     end_time <- proc.time() - start_time
     message(sprintf("ICA running time: %.3f s", end_time[[3]]))
   }
 
+  if (!is.null(pca_decomp)) {
+    x <- x_original_space
+  }
   S <- x %*% unmixing_mat
   colnames(S) <- sprintf("Comp%03d", 1:ncol(S))
 
@@ -202,12 +273,12 @@ ext_in <- function(x,
   blockno <- 1
 
   w_change <- tol
-  min_lrate <- 1e-10
 
   nblock <- n_samps %/% blocksize
   lastt <- (nblock - 1) * blocksize + 1
   n_small_angle <- 20
   count_small_angle <- 0
+  converged <- FALSE
 
   if (extended) {
     loss_fun <- tanh
@@ -244,7 +315,7 @@ ext_in <- function(x,
 
   }
 
-  while (iter < maxiter) {
+  while (iter < maxiter && !converged) {
     # shuffle timepoints
     perms <- sample.int(nrow(x))
     for (t in seq(1, lastt, by = blocksize)) {
@@ -319,9 +390,12 @@ ext_in <- function(x,
       change <- sum(wtchange * wtchange)
 
       if (iter > 2) {
-        angledelta <- acos(sum(delta * olddelta) /
-                             sqrt(change * oldchange))
-        angledelta <- degconst * angledelta
+        angle_denom <- sqrt(change * oldchange)
+        if (is.finite(angle_denom) && angle_denom > 0) {
+          angle_cos <- sum(delta * olddelta) / angle_denom
+          angle_cos <- max(-1, min(1, angle_cos))
+          angledelta <- degconst * acos(angle_cos)
+        }
       }
 
       oldweights <- weights
@@ -341,6 +415,7 @@ ext_in <- function(x,
         lrate <- lrate * annealstep
         olddelta <- delta
         oldchange <- change
+        count_small_angle <- 0
       } else {
         if (iter == 1) {
           olddelta <- delta
@@ -349,13 +424,13 @@ ext_in <- function(x,
         if (n_small_angle > 0) {
            count_small_angle <- count_small_angle + 1
            if (count_small_angle > n_small_angle) {
-             maxiter <- iter
+             converged <- TRUE
            }
          }
       }
 
       if (iter > 2 & change < w_change) {
-        iter <- maxiter
+        converged <- TRUE
       } else if (change > blowup_limit) {
         lrate <- lrate * blowup_fac
       }
@@ -388,8 +463,11 @@ ext_in <- function(x,
 do_whitening <- function(x,
                          whiten) {
 
-  if (identical(whiten,
-                "sqrtm")) {
+  if (identical(whiten, "none")) {
+    white_cov <- diag(ncol(x))
+    x_white <- x
+  } else if (identical(whiten,
+                       "sqrtm")) {
     white_cov <- eigen(stats::cov(x))
     white_cov <- white_cov$vectors %*% diag(1/sqrt(white_cov$values)) %*% MASS::ginv(white_cov$vectors)
     white_cov <- 2 * white_cov
@@ -405,4 +483,3 @@ do_whitening <- function(x,
   list(x_white = x_white,
        white_cov = white_cov)
 }
-

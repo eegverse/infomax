@@ -26,8 +26,9 @@ run_infomax(
 \item{centre}{Mean-centre columns before running the algorithm. Defaults to
 TRUE.}
 
-\item{pca}{A scalar. Use PCA dimensionality reduction. Often helpful when the
-data is rank deficient.}
+\item{pca}{A whole number of components to retain with PCA dimensionality
+reduction. Must be at least two and no greater than the processed data rank.
+Often helpful when the data is rank deficient.}
 
 \item{anneal}{Annealing rate at which learning rate reduced.}
 
@@ -35,9 +36,11 @@ data is rank deficient.}
 
 \item{tol}{Tolerance for convergence of ICA. Defaults to 1e-07.}
 
-\item{lrate}{Initial learning rate. NULL}
+\item{lrate}{Initial learning rate. When \code{NULL}, a heuristic based on the
+number of components is used.}
 
-\item{blocksize}{Size of blocks of data used for learning.}
+\item{blocksize}{Size of blocks of data used for learning. Must be a whole
+number between one and the number of samples.}
 
 \item{kurtsize}{Size of blocks for kurtosis checking. Defaults to 6000 or
 length of data, whichever is smaller.}
@@ -54,8 +57,8 @@ length of data, whichever is smaller.}
 A list containing:
 \itemize{
 \item \strong{S}:  Matrix of source estimates
-\item \strong{M}:  Estimated mixing matrix
-\item \strong{W}:  Estimated unmixing matrix
+\item \strong{M}:  Estimated mixing matrix (features by components)
+\item \strong{W}:  Estimated unmixing matrix (features by components)
 \item \strong{iter}: Number of iterations completed
 }
 }
