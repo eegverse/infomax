@@ -17,7 +17,8 @@ run_infomax(
   maxiter = 200,
   extended = TRUE,
   whiten = c("sqrtm", "ZCA", "PCA", "ZCA-cor", "PCA-cor", "none"),
-  verbose = TRUE
+  verbose = TRUE,
+  backend = c("r", "cpp")
 )
 }
 \arguments{
@@ -49,6 +50,8 @@ length of data, whichever is smaller.}
 \item{whiten}{Whitening method to use. See notes on usage.}
 
 \item{verbose}{Print informative messages for each update of the algorithm.}
+
+\item{backend}{Which backend to use: \code{"r"} (pure R) or \code{"cpp"} (C++/RcppArmadillo).}
 }
 \value{
 A list containing:

@@ -9,7 +9,7 @@ mixed_data[, 1] <- source_a - 2 * source_b + 1.2 * source_c
 mixed_data[, 2] <- source_a * 3.4 + 1.5 * source_b - 2 * source_c
 mixed_data[, 3] <- source_a * .9 - 2.5 * source_b + .8 * source_c
 
-test_that("extended infomax runs", {
+test_that("extended infomax runs (r backend)", {
   init_out <- run_infomax(mixed_data, extended = TRUE, verbose = FALSE)
   expect_type(init_out, "list")
   expect_true(abs(cor(init_out$S[, 1], source_a)) > .98)
@@ -23,4 +23,17 @@ test_that("extended infomax runs", {
   expect_true(abs(cor(init_nonext$S[, 2], source_b)) < .39)
   expect_true(abs(cor(init_nonext$S[, 3], source_c)) > .67)
   expect_true(abs(cor(init_nonext$S[, 3], source_c)) < .69)
+})
+
+test_that("cpp backend recovers sources", {
+  out_cpp <- run_infomax(mixed_data, extended = TRUE, verbose = FALSE,
+                         backend = "cpp")
+  expect_type(out_cpp, "list")
+  # Each sorted component should correlate > 0.98 with one of the true sources.
+  # Both backends use independent random shuffles so we compare to known truth,
+  # not to each other's output.
+  cors <- abs(cor(out_cpp$S, cbind(source_a, source_b, source_c)))
+  expect_true(max(cors[1, ]) > .98)
+  expect_true(max(cors[2, ]) > .98)
+  expect_true(max(cors[3, ]) > .98)
 })
