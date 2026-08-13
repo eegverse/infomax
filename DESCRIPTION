@@ -26,6 +26,6 @@ Suggests:
     testthat (>= 3.0.0),
     bench,
     profvis
-URL: https://github.com/craddm/infomax
-BugReports: https://github.com/craddm/infomax/issues
+URL: https://github.com/eegverse/infomax
+BugReports: https://github.com/eegverse/infomax/issues
 Config/testthat/edition: 3
