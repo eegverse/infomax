@@ -37,3 +37,15 @@ test_that("cpp backend recovers sources", {
   expect_true(max(cors[2, ]) > .98)
   expect_true(max(cors[3, ]) > .98)
 })
+
+test_that("weight blowups restart safely", {
+  set.seed(1)
+  x <- matrix(rnorm(400), nrow = 100, ncol = 4)
+
+  for (backend in c("r", "cpp")) {
+    out <- run_infomax(x, lrate = 3, maxiter = 2,
+                       verbose = FALSE, backend = backend)
+    expect_true(all(is.finite(out$W)), info = backend)
+    expect_true(all(is.finite(out$S)), info = backend)
+  }
+})

@@ -1,6 +1,7 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 #define ARMA_DONT_USE_OPENMP
 #include <RcppArmadillo.h>
+#include <cmath>
 using namespace Rcpp;
 
 //' Core Extended Infomax ICA (C++ backend)
@@ -57,6 +58,9 @@ List ext_in_cpp(const arma::mat& x,
   double blowup_limit = 1e9;
   double blowup_fac   = 0.8;
   double restart_fac  = 0.9;
+  double min_lrate    = 1e-10;
+  int max_restarts    = 50;
+  int restart_count   = 0;
   double extmomentum  = 0.5;
   double signsbias    = 0.02;
   double degconst     = 180.0 / arma::datum::pi;
@@ -126,7 +130,8 @@ List ext_in_cpp(const arma::mat& x,
         bias += lrate * arma::sum(one_m_2y, 0).t();
       }
 
-      if (arma::abs(W).max() > max_weight) {
+      if (!W.is_finite() || !bias.is_finite() || !std::isfinite(lrate) ||
+          arma::abs(W).max() > max_weight) {
         blowup = true;
         break;
       }
@@ -210,9 +215,9 @@ List ext_in_cpp(const arma::mat& x,
         }
       }
 
-      if (iter > 2 && change < tol) {
+      if (iter > 2 && std::isfinite(change) && change < tol) {
         iter = maxiter;
-      } else if (change > blowup_limit) {
+      } else if (!std::isfinite(change) || change > blowup_limit) {
         lrate *= blowup_fac;
       }
 
@@ -221,6 +226,11 @@ List ext_in_cpp(const arma::mat& x,
       iter = 0;
       blowup = false;
       blockno = 1;
+      restart_count++;
+      if (restart_count > max_restarts || !std::isfinite(lrate) ||
+          lrate * restart_fac < min_lrate) {
+        Rcpp::stop("Infomax failed after repeated weight blowups.");
+      }
       lrate *= restart_fac;
       if (verbose) {
         Rcpp::Rcout << "Weights blown up, lowering lrate to " << lrate << "\n";
@@ -230,7 +240,7 @@ List ext_in_cpp(const arma::mat& x,
       olddelta = arma::zeros<arma::vec>(n_comps * n_comps);
       oldchange = 0.0;
       bias = arma::zeros<arma::vec>(n_comps);
-      extblocks = 0;
+      extblocks = 1;
       signs    = arma::ones<arma::vec>(n_comps);
       signs(0) = -1.0;
       signs_r  = signs.t();

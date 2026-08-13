@@ -202,6 +202,8 @@ ext_in <- function(x,
   blowup <- FALSE
   blowup_fac <- 0.8
   restart_fac <- .9
+  max_restarts <- 50
+  restart_count <- 0
 
   kurt_size <- min(kurt_size,
                    nrow(x))
@@ -258,9 +260,17 @@ ext_in <- function(x,
         bias <- bias + lrate * colSums(1 - 2 * y)
       }
 
-      # check weights
-      if (max(abs(weights)) > max_weight) {
+      # Check the update before doing any further calculations. In particular,
+      # do not send non-finite weights into the kurtosis calculation.
+      if (!all(is.finite(weights)) ||
+          !all(is.finite(bias)) ||
+          !is.finite(lrate) ||
+          max(abs(weights)) > max_weight) {
         blowup <- TRUE
+      }
+
+      if (blowup) {
+        break
       }
 
       if (extended) {
@@ -351,9 +361,9 @@ ext_in <- function(x,
          }
       }
 
-      if (iter > 2 && change < w_change) {
+      if (iter > 2 && is.finite(change) && change < w_change) {
         iter <- maxiter
-      } else if (change > blowup_limit) {
+      } else if (!is.finite(change) || change > blowup_limit) {
         lrate <- lrate * blowup_fac
       }
 
@@ -362,6 +372,11 @@ ext_in <- function(x,
       iter <- 0
       blowup <- FALSE
       blockno <- 1
+      restart_count <- restart_count + 1
+      if (restart_count > max_restarts ||
+          !is.finite(lrate) || lrate * restart_fac < min_lrate) {
+        stop("Infomax failed after repeated weight blowups.")
+      }
       lrate <- lrate * restart_fac
       message(paste("Weights blown up, lowering lrate to ",
                     lrate))
@@ -370,7 +385,7 @@ ext_in <- function(x,
       olddelta <- numeric(n_comps^2)
       bias <- numeric(n_comps)
 
-      extblocks <- 0
+      extblocks <- 1
       signs <- rep(1, n_comps)
       signs[1] <- -1
       signs_mat <- matrix(signs, n_comps, n_comps, byrow = TRUE)
