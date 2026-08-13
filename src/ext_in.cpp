@@ -98,8 +98,11 @@ List ext_in_cpp(const arma::mat& x,
     for (int i = 0; i < k; i++) out[i] = (arma::uword)(p[i] - 1);
     return out;
   };
+  
+  bool converged = false;
+  std::string stop_reason = "maxiter";
 
-  while (iter < maxiter) {
+  while (iter < maxiter && !converged) {
     arma::uvec perms = r_randperm(n_samps);
     blowup = false;
 
@@ -180,8 +183,9 @@ List ext_in_cpp(const arma::mat& x,
       arma::vec delta = arma::vectorise(wtchange);
       double change = arma::dot(delta, delta);
       double angledelta = 0.0;
+      double angle_denom = std::sqrt(change * oldchange);
 
-      if (iter > 2) {
+      if (std::isfinite(angle_denom) && angle_denom > 0.0) {
         double cosval = arma::dot(delta, olddelta) /
                         std::sqrt(change * oldchange);
         cosval = std::max(-1.0, std::min(1.0, cosval));
@@ -210,13 +214,15 @@ List ext_in_cpp(const arma::mat& x,
         if (n_small_angle > 0) {
           count_small_angle++;
           if (count_small_angle > n_small_angle) {
-            maxiter = iter;
+            converged = true;
+            stop_reason = "small_angle";
           }
         }
       }
 
       if (iter > 2 && std::isfinite(change) && change < tol) {
-        iter = maxiter;
+        converged = true;
+        stop_reason = "tol";
       } else if (!std::isfinite(change) || change > blowup_limit) {
         lrate *= blowup_fac;
       }
@@ -226,6 +232,7 @@ List ext_in_cpp(const arma::mat& x,
       iter = 0;
       blowup = false;
       blockno = 1;
+      count_small_angle = 0;
       restart_count++;
       if (restart_count > max_restarts || !std::isfinite(lrate) ||
           lrate * restart_fac < min_lrate) {
@@ -250,5 +257,5 @@ List ext_in_cpp(const arma::mat& x,
     }
   }
 
-  return List::create(Named("weights") = W, Named("iter") = iter);
+  return List::create(Named("weights") = W, Named("iter") = iter, Named("converged") = converged, Named("stop_reason") = stop_reason, Named("final_lrate") = lrate);
 }

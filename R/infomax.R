@@ -83,8 +83,8 @@ run_infomax <- function(x,
   backend <- match.arg(backend)
 
   if (!is.numeric(x) || length(dim(x)) != 2L ||
-      nrow(x) < 2L || ncol(x) < 1L) {
-    stop("x must be a numeric matrix with at least two rows and one column.")
+      nrow(x) < 2L || ncol(x) < 2L) {
+    stop("x must be a numeric matrix with at least two rows and two columns.")
   }
   if (any(!is.finite(x))) {
     stop("x must contain only finite values.")
@@ -96,9 +96,9 @@ run_infomax <- function(x,
   }
   if (!is.null(pca) &&
       (length(pca) != 1L || !is.numeric(pca) || !is.finite(pca) ||
-       pca < 1L || pca > min(nrow(x) - 1L, ncol(x)) ||
+       pca < 2L || pca > min(nrow(x) - 1L, ncol(x)) ||
        pca != floor(pca))) {
-    stop("pca must be an integer between 1 and the available data rank.")
+    stop("pca must be an integer between 2 and the available data rank.")
   }
   scalar_controls <- list(anneal = anneal, annealdeg = annealdeg,
                           tol = tol, maxiter = maxiter, kurtsize = kurtsize)
@@ -107,7 +107,7 @@ run_infomax <- function(x,
   }, logical(1)))) {
     stop("anneal, annealdeg, tol, maxiter, and kurtsize must be finite scalars.")
   }
-  if (anneal <= 0 || anneal > 1 || annealdeg < 0 || tol < 0 ||
+  if (anneal <= 0 || anneal > 1 || annealdeg < 0  || annealdeg > 180 || tol < 0 ||
       maxiter < 1 || maxiter != floor(maxiter) || kurtsize < 1 ||
       kurtsize != floor(kurtsize)) {
     stop("Invalid annealing, tolerance, iteration, or kurtosis parameters.")
@@ -139,6 +139,10 @@ run_infomax <- function(x,
     stop("x does not have sufficient rank for the requested number of components.")
   }
 
+  if (identical(whiten, "none") && !is.null(pca) && pca < ncol(x)) {
+    stop("Cannot use PCA dimensionality reduction without whitening.")
+  } 
+
   # Perform PCA if specified
   x_orig <- x
   pca_decomp <- if (!is.null(pca)) {
@@ -153,12 +157,17 @@ run_infomax <- function(x,
   lrate <- ifelse(is.null(lrate), .01 / log(ncol(x)^2), lrate)
 
   # Whitening the data
-  whitened_data <- do_whitening(x, whiten)
-
+  if (identical(whiten, "none")) {
+    whitened_data <- list(x_white = x, white_cov = diag(ncol(x)))
+  } else {
+    if (verbose) message("Whitening data...")
+    whitened_data <- do_whitening(x, whiten)
+  }
+  
   # Train ICA
   start_time <- proc.time()
 
-  if (backend == "cpp") {
+  if (identical(backend, "cpp")) {
     rotation_mat <- ext_in_cpp(whitened_data$x_white,
                                maxiter = maxiter,
                                blocksize = blocksize,
@@ -204,7 +213,13 @@ run_infomax <- function(x,
   S <- x_orig %*% unmixing_mat
   colnames(S) <- sprintf("Comp%03d", 1:ncol(S))
 
-  list(M = mixing_mat, W = unmixing_mat, S = S, iter = rotation_mat$iter)
+  list(M = mixing_mat,
+    W = unmixing_mat,
+    S = S,
+    iter = rotation_mat$iter,
+    converged = rotation_mat$converged,
+    stop_reason = rotation_mat$stop_reason,
+    final_lrate = rotation_mat$final_lrate)
 }
 
 ext_in <- function(x,
@@ -251,8 +266,6 @@ ext_in <- function(x,
   kurt_size <- min(kurt_size,
                    nrow(x))
 
-  degconst <- 180 / pi
-
   delta <- numeric(n_comps^2)
   olddelta <- numeric(n_comps^2)
   oldsigns <- numeric(n_comps)
@@ -262,8 +275,6 @@ ext_in <- function(x,
   signcount_threshold <- 25
   signcount_step <- 2
   blockno <- 1
-
-  w_change <- tol
   min_lrate <- 1e-10
 
   nblock <- n_samps %/% blocksize
@@ -276,7 +287,10 @@ ext_in <- function(x,
     signs_mat <- matrix(signs, n_comps, n_comps, byrow = TRUE)
   }
 
-  while (iter < maxiter) {
+  converged <- FALSE
+  stop_reason <- "maxiter"
+
+  while (iter < maxiter && !converged) {
     # shuffle timepoints
     perms <- sample.int(nrow(x))
     for (t in seq(1, lastt, by = blocksize)) {
@@ -364,15 +378,18 @@ ext_in <- function(x,
     if (!blowup) {
       wtchange <- weights - oldweights
       iter <- iter + 1
+      
       angledelta <- 0
       delta <- as.numeric(wtchange)
       change <- sum(delta * delta)
+      angle_denom <- sqrt(change * oldchange)
 
-      if (iter > 2) {
-        cos_angle <- sum(delta * olddelta) / sqrt(change * oldchange)
+      if (is.finite(angle_denom) && angle_denom > 0) {
+        cos_angle <- sum(delta * olddelta) / angle_denom
         cos_angle <- max(-1, min(1, cos_angle))
-        angledelta <- acos(cos_angle)
-        angledelta <- degconst * angledelta
+        angledelta <- acos(cos_angle) * 180 / pi
+      } else {
+        angledelta <- 0
       }
 
       oldweights <- weights
@@ -398,15 +415,17 @@ ext_in <- function(x,
           oldchange <- change
         }
         if (n_small_angle > 0) {
-           count_small_angle <- count_small_angle + 1
-           if (count_small_angle > n_small_angle) {
-             maxiter <- iter
-           }
+          count_small_angle <- count_small_angle + 1
+          if (count_small_angle > n_small_angle) {
+            converged <- TRUE
+            stop_reason <- "small_angle"
+            }
          }
       }
 
-      if (iter > 2 && is.finite(change) && change < w_change) {
-        iter <- maxiter
+      if (iter > 2 && is.finite(change) && change < tol) {
+        converged <- TRUE
+        stop_reason <- "tol"
       } else if (!is.finite(change) || change > blowup_limit) {
         lrate <- lrate * blowup_fac
       }
@@ -416,6 +435,7 @@ ext_in <- function(x,
       iter <- 0
       blowup <- FALSE
       blockno <- 1
+      count_small_angle <- 0
       restart_count <- restart_count + 1
       if (restart_count > max_restarts ||
           !is.finite(lrate) || lrate * restart_fac < min_lrate) {
@@ -442,7 +462,11 @@ ext_in <- function(x,
 
   }
   list(weights = weights,
-       iter = iter)
+       iter = iter,
+       converged = converged,
+       stop_reason = stop_reason,
+       restart_count = restart_count,
+       final_lrate = lrate)
 }
 
 do_whitening <- function(x,
