@@ -24,6 +24,7 @@
 #' @param extended Run extended-Infomax. Defaults to TRUE.
 #' @param whiten Whitening method to use. See notes on usage.
 #' @param verbose Print informative messages for each update of the algorithm.
+#' @param backend Which backend to use: `"r"` (pure R) or `"cpp"` (C++/RcppArmadillo).
 #' @author Matt Craddock \email{matt@@mattcraddock.com}
 #' @examples
 #' time_x <- seq(0, 1, by = 1/256)
@@ -74,10 +75,12 @@ run_infomax <- function(x,
                                    "ZCA-cor",
                                    "PCA-cor",
                                    "none"),
-                        verbose = TRUE) {
+                        verbose = TRUE,
+                        backend = c("r", "cpp")) {
 
   x <- as.matrix(x)
   whiten <- match.arg(whiten)
+  backend <- match.arg(backend)
 
   # Check matrix rank
   if (is.null(pca) && Matrix::rankMatrix(x) < ncol(x)) {
@@ -94,6 +97,7 @@ run_infomax <- function(x,
   }
 
   # Perform PCA if specified
+  x_orig <- x
   pca_decomp <- if (!is.null(pca)) {
     pca_decomp <- eigen(stats::cov(x))
     x <- x %*% pca_decomp$vectors[, 1:pca]
@@ -110,15 +114,29 @@ run_infomax <- function(x,
 
   # Train ICA
   start_time <- proc.time()
-  rotation_mat <- ext_in(whitened_data$x_white,
-                         blocksize = blocksize,
-                         lrate = lrate, maxiter = maxiter,
-                         annealdeg = annealdeg,
-                         annealstep = anneal,
-                         tol = tol,
-                         extended = extended,
-                         kurt_size = kurtsize,
-                         verbose = verbose)
+
+  if (backend == "cpp") {
+    rotation_mat <- ext_in_cpp(whitened_data$x_white,
+                               maxiter = maxiter,
+                               blocksize = blocksize,
+                               lrate = lrate,
+                               kurt_size = kurtsize,
+                               annealdeg = annealdeg,
+                               annealstep = anneal,
+                               tol = tol,
+                               extended = extended,
+                               verbose = verbose)
+  } else {
+    rotation_mat <- ext_in(whitened_data$x_white,
+                           blocksize = blocksize,
+                           lrate = lrate, maxiter = maxiter,
+                           annealdeg = annealdeg,
+                           annealstep = anneal,
+                           tol = tol,
+                           extended = extended,
+                           kurt_size = kurtsize,
+                           verbose = verbose)
+  }
 
   # Calculate mixing and unmixing matrices
   unmix_mat <- crossprod(rotation_mat$weights, whitened_data$white_cov)
@@ -140,7 +158,7 @@ run_infomax <- function(x,
     message(sprintf("ICA running time: %.3f s", end_time[[3]]))
   }
 
-  S <- x %*% unmixing_mat
+  S <- x_orig %*% unmixing_mat
   colnames(S) <- sprintf("Comp%03d", 1:ncol(S))
 
   list(M = mixing_mat, W = unmixing_mat, S = S, iter = rotation_mat$iter)
@@ -165,10 +183,8 @@ ext_in <- function(x,
   oldweights <- weights
   oldchange <- 0
 
-  bias <- array(0,
-                dim = c(n_comps, 1))
-  onesrow <- array(1,
-                  dim = c(1, blocksize))
+  # Optimization: store bias as a plain vector (not a matrix)
+  bias <- numeric(n_comps)
 
   BI <- blocksize * diag(n_comps)
 
@@ -186,6 +202,8 @@ ext_in <- function(x,
   blowup <- FALSE
   blowup_fac <- 0.8
   restart_fac <- .9
+  max_restarts <- 50
+  restart_count <- 0
 
   kurt_size <- min(kurt_size,
                    nrow(x))
@@ -193,10 +211,11 @@ ext_in <- function(x,
   degconst <- 180 / pi
 
   delta <- numeric(n_comps^2)
+  olddelta <- numeric(n_comps^2)
   oldsigns <- numeric(n_comps)
 
-  signcounts <- NULL
   extblocks <- 1
+  signcount <- 0
   signcount_threshold <- 25
   signcount_step <- 2
   blockno <- 1
@@ -209,39 +228,9 @@ ext_in <- function(x,
   n_small_angle <- 20
   count_small_angle <- 0
 
+  # Optimization: pre-compute sign matrix (updated only when signs change)
   if (extended) {
-    loss_fun <- tanh
-    bias_fun <- function(y) {
-      colSums(y) * - 2
-    }
-
-    update_weights <- function(weights,
-                               BI,
-                               signs,
-                               n_comps,
-                               u,
-                               y) {
-      weights %*% (BI - matrix(signs, n_comps, n_comps, byrow = TRUE) * crossprod(u, y) - crossprod(u))
-    }
-
-  } else {
-    loss_fun <-
-      function(u) {
-        1 / (1 + exp(-u))
-      }
-    bias_fun <- function(y) {
-      colSums(1 - 2 * y)
-    }
-
-    update_weights <- function(weights,
-                               BI,
-                               signs,
-                               n_comps,
-                               u,
-                               y) {
-      weights %*% (BI + crossprod(u, (1 - 2 * y)))
-    }
-
+    signs_mat <- matrix(signs, n_comps, n_comps, byrow = TRUE)
   }
 
   while (iter < maxiter) {
@@ -250,56 +239,74 @@ ext_in <- function(x,
     for (t in seq(1, lastt, by = blocksize)) {
       this_set <- perms[t:(t + blocksize - 1)]
       u <- x[this_set, ] %*% weights
-      u <- u + matrix(bias[, 1],
-                       blocksize,
-                       n_comps,
-                       byrow = TRUE)
+      # Optimization: bias is a plain vector; sweep is cleaner than matrix()
+      u <- sweep(u, 2, bias, "+")
 
-      y <- loss_fun(u)
+      if (extended) {
+        y <- tanh(u)
 
-      #weights <- weights + lrate * weights %*% (BI - matrix(signs, n_comps, n_comps, byrow = TRUE) * crossprod(u, y) - crossprod(u))
+        # Optimization: inlined weight update (no closure call overhead)
+        # uses pre-computed signs_mat instead of rebuilding each block
+        weights <- weights + lrate * weights %*%
+          (BI - signs_mat * crossprod(u, y) - crossprod(u))
 
-      weights <- weights + lrate * update_weights(weights,
-                                                  BI,
-                                                  signs,
-                                                  n_comps,
-                                                  u,
-                                                  y)
-      bias <- bias + lrate * bias_fun(y) #colSums(y) * -2
+        bias <- bias - 2 * lrate * colSums(y)
+      } else {
+        y <- 1 / (1 + exp(-u))
 
-      # check weights
-      if (max(abs(weights)) > max_weight) {
+        weights <- weights + lrate * weights %*%
+          (BI + crossprod(u, (1 - 2 * y)))
+
+        bias <- bias + lrate * colSums(1 - 2 * y)
+      }
+
+      # Check the update before doing any further calculations. In particular,
+      # do not send non-finite weights into the kurtosis calculation.
+      if (!all(is.finite(weights)) ||
+          !all(is.finite(bias)) ||
+          !is.finite(lrate) ||
+          max(abs(weights)) > max_weight) {
         blowup <- TRUE
       }
 
+      if (blowup) {
+        break
+      }
+
       if (extended) {
-        # kurtosis estimation
-        if (extblocks > 0 & blockno %% extblocks == 0) {
+        # kurtosis estimation (sign adaptation)
+        if (extblocks > 0 && blockno %% extblocks == 0) {
           if (kurt_size < n_samps) {
             test_act <- x[sample.int(nrow(x), kurt_size), ] %*% weights
           } else {
             test_act <- x %*% weights
           }
 
-          kurt <- colMeans(test_act * test_act * test_act * test_act) / colMeans(test_act^2)^2
-          kurt <- kurt - 3
+          kurt <- colMeans(test_act^4) / colMeans(test_act^2)^2 - 3
 
           if (extmomentum > 0) {
             kurt <- extmomentum * old_kurt + (1 - extmomentum) * kurt
             old_kurt <- kurt
           }
 
-          signs <- sign(kurt + signsbias)
+          new_signs <- sign(kurt + signsbias)
 
-          if (isTRUE(all.equal(signs, oldsigns))) {
+          if (isTRUE(all.equal(new_signs, oldsigns))) {
             signcount <- signcount + 1
           } else {
             signcount <- 0
           }
 
-          oldsigns <- signs
-          signcounts <- c(signcounts,
-                          signcount)
+          oldsigns <- new_signs
+
+          # Optimization: only rebuild signs_mat when signs actually changed
+          if (!identical(new_signs, signs)) {
+            signs <- new_signs
+            signs_mat <- matrix(signs, n_comps, n_comps, byrow = TRUE)
+          } else {
+            signs <- new_signs
+          }
+
           if (signcount >= signcount_threshold) {
             extblocks <- trunc(extblocks * signcount_step)
             signcount <- 0
@@ -316,7 +323,7 @@ ext_in <- function(x,
       iter <- iter + 1
       angledelta <- 0
       delta <- as.numeric(wtchange)
-      change <- sum(wtchange * wtchange)
+      change <- sum(delta * delta)
 
       if (iter > 2) {
         angledelta <- acos(sum(delta * olddelta) /
@@ -354,9 +361,9 @@ ext_in <- function(x,
          }
       }
 
-      if (iter > 2 & change < w_change) {
+      if (iter > 2 && is.finite(change) && change < w_change) {
         iter <- maxiter
-      } else if (change > blowup_limit) {
+      } else if (!is.finite(change) || change > blowup_limit) {
         lrate <- lrate * blowup_fac
       }
 
@@ -365,19 +372,25 @@ ext_in <- function(x,
       iter <- 0
       blowup <- FALSE
       blockno <- 1
+      restart_count <- restart_count + 1
+      if (restart_count > max_restarts ||
+          !is.finite(lrate) || lrate * restart_fac < min_lrate) {
+        stop("Infomax failed after repeated weight blowups.")
+      }
       lrate <- lrate * restart_fac
       message(paste("Weights blown up, lowering lrate to ",
                     lrate))
       weights <- startweights
       oldweights <- startweights
-      olddelta <- numeric(n_comps)
-      bias <- array(0,
-                    dim = c(n_comps, 1))
+      olddelta <- numeric(n_comps^2)
+      bias <- numeric(n_comps)
 
-      extblocks <- 0
+      extblocks <- 1
       signs <- rep(1, n_comps)
       signs[1] <- -1
+      signs_mat <- matrix(signs, n_comps, n_comps, byrow = TRUE)
       oldsigns <- numeric(n_comps)
+      signcount <- 0
     }
 
   }
@@ -405,4 +418,3 @@ do_whitening <- function(x,
   list(x_white = x_white,
        white_cov = white_cov)
 }
-
