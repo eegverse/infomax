@@ -339,7 +339,9 @@ ext_in <- function(x,
             test_act <- x %*% weights
           }
 
-          kurt <- colMeans(test_act^4) / colMeans(test_act^2)^2 - 3
+          test_act2 <- test_act * test_act
+
+          kurt <- colMeans(test_act2 * test_act2) / colMeans(test_act2)^2 - 3
 
           if (extmomentum > 0) {
             kurt <- extmomentum * old_kurt + (1 - extmomentum) * kurt
