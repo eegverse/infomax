@@ -107,7 +107,7 @@ run_infomax <- function(x,
   }, logical(1)))) {
     stop("anneal, annealdeg, tol, maxiter, and kurtsize must be finite scalars.")
   }
-  if (anneal <= 0 || anneal > 1 || annealdeg < 0  || annealdeg > 180 || tol < 0 ||
+  if (anneal <= 0 || anneal > 1 || annealdeg < 0 || annealdeg > 180 || tol < 0 ||
       maxiter < 1 || maxiter != floor(maxiter) || kurtsize < 1 ||
       kurtsize != floor(kurtsize)) {
     stop("Invalid annealing, tolerance, iteration, or kurtosis parameters.")
@@ -156,7 +156,7 @@ run_infomax <- function(x,
 
   # Set initial learning rate if not provided
   if (is.null(lrate)) {
-    .01 / log(ncol(x)^2)
+    lrate <- 0.01 / log(ncol(x)^2)
   } 
 
   # Whitening the data
@@ -171,26 +171,30 @@ run_infomax <- function(x,
   start_time <- proc.time()
 
   if (identical(backend, "cpp")) {
-    rotation_mat <- ext_in_cpp(whitened_data$x_white,
-                               maxiter = maxiter,
-                               blocksize = blocksize,
-                               lrate = lrate,
-                               kurt_size = kurtsize,
-                               annealdeg = annealdeg,
-                               annealstep = anneal,
-                               tol = tol,
-                               extended = extended,
-                               verbose = verbose)
+    rotation_mat <- ext_in_cpp(
+      whitened_data$x_white,
+      maxiter = maxiter,
+      blocksize = blocksize,
+      lrate = lrate,
+      kurt_size = kurtsize,
+      annealdeg = annealdeg,
+      annealstep = anneal,
+      tol = tol,
+      extended = extended,
+      verbose = verbose
+    )
   } else {
-    rotation_mat <- ext_in(whitened_data$x_white,
-                           blocksize = blocksize,
-                           lrate = lrate, maxiter = maxiter,
-                           annealdeg = annealdeg,
-                           annealstep = anneal,
-                           tol = tol,
-                           extended = extended,
-                           kurt_size = kurtsize,
-                           verbose = verbose)
+    rotation_mat <- ext_in(
+      whitened_data$x_white,
+      blocksize = blocksize,
+      lrate = lrate,
+      maxiter = maxiter,
+      annealdeg = annealdeg,
+      annealstep = anneal,
+      tol = tol,
+      extended = extended,
+      kurt_size = kurtsize,
+      verbose = verbose)
   }
 
   # Calculate mixing and unmixing matrices
@@ -216,12 +220,14 @@ run_infomax <- function(x,
   S <- x_orig %*% unmixing_mat
   colnames(S) <- sprintf("Comp%03d", 1:ncol(S))
 
-  list(M = mixing_mat,
+  list(
+    M = mixing_mat,
     W = unmixing_mat,
     S = S,
     iter = rotation_mat$iter,
     converged = rotation_mat$converged,
     stop_reason = rotation_mat$stop_reason,
-    final_lrate = rotation_mat$final_lrate)
+    final_lrate = rotation_mat$final_lrate,
+    restart_count = rotation_mat$restart_count)
 }
 

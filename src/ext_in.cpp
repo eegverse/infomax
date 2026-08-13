@@ -257,5 +257,12 @@ List ext_in_cpp(const arma::mat& x,
     }
   }
 
-  return List::create(Named("weights") = W, Named("iter") = iter, Named("converged") = converged, Named("stop_reason") = stop_reason, Named("final_lrate") = lrate);
+  return List::create(
+    Named("weights") = W,
+    Named("iter") = iter, 
+    Named("converged") = converged, 
+    Named("stop_reason") = stop_reason, 
+    Named("restart_count") = restart_count,
+    Named("final_lrate") = lrate
+  );
 }
