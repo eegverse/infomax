@@ -19,7 +19,6 @@ Imports:
 LinkingTo:
     Rcpp,
     RcppArmadillo
-RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Suggests:
     covr,
@@ -29,3 +28,4 @@ Suggests:
 URL: https://github.com/eegverse/infomax
 BugReports: https://github.com/eegverse/infomax/issues
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.0

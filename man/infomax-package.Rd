@@ -11,13 +11,18 @@ Implements Infomax and Extended Infomax Independent Component Analysis (ICA). A 
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/craddm/infomax}
-  \item Report bugs at \url{https://github.com/craddm/infomax/issues}
+  \item \url{https://github.com/eegverse/infomax}
+  \item Report bugs at \url{https://github.com/eegverse/infomax/issues}
 }
 
 }
 \author{
 \strong{Maintainer}: Matt Craddock \email{matt@mattcraddock.com}
+
+Authors:
+\itemize{
+  \item Matt Craddock \email{matt@mattcraddock.com}
+}
 
 Other contributors:
 \itemize{
