@@ -4,3 +4,6 @@
 .Ruserdata
 docs
 *.Rcheck
+src/*.o
+src/*.so
+src/*.dll
