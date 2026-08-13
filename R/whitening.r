@@ -1,5 +1,10 @@
-# Whiten the data using the specified method. This function is used internally by the infomax function and is not intended for direct use by users.
-# @keywords internal
+#' Whiten the data using the specified method. 
+#'
+#' This function is used internally by the infomax function and is not intended for direct use by users.
+#'
+#' @param x A numeric matrix of data to be whitened.
+#' @param whiten A character string specifying the whitening method to use.
+#' @keywords internal
 do_whitening <- function(x,
                          whiten) {
 

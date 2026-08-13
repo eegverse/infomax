@@ -1,24 +1,26 @@
-# Run the (extended) Infomax algorithim in R
-# 
-# @param x Data matrix (rows = samples, columns = channels)
-# @param maxiter Maximum number of iterations to run the algorithm
-# @param blocksize Size of blocks of data used for learning
-# @param lrate Initial learning rate
-# @param kurt_size Size of blocks for kurtosis checking. Defaults to 6000 or
-#   length of data, whichever is smaller.
-# @param annealdeg Angle at which learning rate reduced.
-# @param annealstep Annealing rate at which learning rate reduced.
-# @param tol Tolerance for convergence of ICA. Defaults to 1e-07.
-# @param extended Run extended-Infomax. Defaults to TRUE.
-# @param verbose Print informative messages for each update of the algorithm.
-# @return A list containing:
-# * **weights**:  Estimated unmixing matrix
-# * **iter**: Number of iterations completed
-# * **converged**: TRUE if the algorithm converged, FALSE otherwise
-# * **stop_reason**: Reason for stopping the algorithm ("maxiter", "small_angle", or "tol")
-# * **restart_count**: Number of times the algorithm restarted due to weight blowup
-# * **final_lrate**: Final learning rate after annealing
-# @keywords internal
+#' Run the (extended) Infomax algorithim in R
+#'
+#' Runs the internal R implementation of the Infomax algorithm, which is used by the run_infomax function. See the run_infomax function for details on usage.
+#' 
+#' @param x Data matrix (rows = samples, columns = channels)
+#' @param maxiter Maximum number of iterations to run the algorithm
+#' @param blocksize Size of blocks of data used for learning
+#' @param lrate Initial learning rate
+#' @param kurt_size Size of blocks for kurtosis checking. Defaults to 6000 or
+#'   length of data, whichever is smaller.
+#' @param annealdeg Angle at which learning rate reduced.
+#' @param annealstep Annealing rate at which learning rate reduced.
+#' @param tol Tolerance for convergence of ICA. Defaults to 1e-07.
+#' @param extended Run extended-Infomax. Defaults to TRUE.
+#' @param verbose Print informative messages for each update of the algorithm.
+#' @return A list containing:
+#' * **weights**:  Estimated unmixing matrix
+#' * **iter**: Number of iterations completed
+#' * **converged**: TRUE if the algorithm converged, FALSE otherwise
+#' * **stop_reason**: Reason for stopping the algorithm ("maxiter", "small_angle", or "tol")
+#' * **restart_count**: Number of times the algorithm restarted due to weight blowup
+#' * **final_lrate**: Final learning rate after annealing
+#' @keywords internal
 
 ext_in <- function(x,
                    maxiter,
