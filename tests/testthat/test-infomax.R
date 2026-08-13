@@ -49,3 +49,26 @@ test_that("weight blowups restart safely", {
     expect_true(all(is.finite(out$S)), info = backend)
   }
 })
+
+test_that("invalid inputs fail with useful errors", {
+  expect_error(run_infomax(matrix(1, nrow = 1), verbose = FALSE),
+               "at least two rows")
+  expect_error(run_infomax(matrix(c(1, NA), nrow = 2), verbose = FALSE),
+               "finite")
+  expect_error(run_infomax(matrix(rnorm(20), nrow = 5),
+                           blocksize = 0, verbose = FALSE),
+               "blocksize")
+  expect_error(run_infomax(matrix(rnorm(20), nrow = 5),
+                           pca = 0, verbose = FALSE),
+               "pca")
+  expect_error(run_infomax(matrix(rnorm(20), nrow = 5),
+                           lrate = 0, verbose = FALSE),
+               "lrate")
+})
+
+test_that("small valid inputs use a non-zero default block size", {
+  set.seed(2)
+  x <- matrix(rnorm(12), nrow = 6, ncol = 2)
+  out <- run_infomax(x, maxiter = 1, verbose = FALSE)
+  expect_true(all(is.finite(out$S)))
+})

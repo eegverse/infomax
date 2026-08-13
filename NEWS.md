@@ -1,5 +1,8 @@
 # infomax (development version)
 
+* Added validation for input matrices and core algorithm parameters.
+* Fixed small-input block-size handling and silenced R-backend restart messages
+  when `verbose = FALSE`.
 * Added C++ backend (`ext_in_cpp()`) via RcppArmadillo for the core ICA iteration loop.
 * `run_infomax()` gains a `backend` argument (`"r"` or `"cpp"`) to select the implementation.
 * C++ backend is ~3.6× faster than the R backend on real EEG data (69 components × 54,416 samples).

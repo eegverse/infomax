@@ -82,18 +82,61 @@ run_infomax <- function(x,
   whiten <- match.arg(whiten)
   backend <- match.arg(backend)
 
-  # Check matrix rank
-  if (is.null(pca) && Matrix::rankMatrix(x) < ncol(x)) {
-    stop("Matrix is not full rank.")
+  if (!is.numeric(x) || length(dim(x)) != 2L ||
+      nrow(x) < 2L || ncol(x) < 1L) {
+    stop("x must be a numeric matrix with at least two rows and one column.")
+  }
+  if (any(!is.finite(x))) {
+    stop("x must contain only finite values.")
+  }
+  if (!is.logical(centre) || length(centre) != 1L || is.na(centre) ||
+      !is.logical(extended) || length(extended) != 1L || is.na(extended) ||
+      !is.logical(verbose) || length(verbose) != 1L || is.na(verbose)) {
+    stop("centre, extended, and verbose must be single TRUE/FALSE values.")
+  }
+  if (!is.null(pca) &&
+      (length(pca) != 1L || !is.numeric(pca) || !is.finite(pca) ||
+       pca < 1L || pca > min(nrow(x) - 1L, ncol(x)) ||
+       pca != floor(pca))) {
+    stop("pca must be an integer between 1 and the available data rank.")
+  }
+  scalar_controls <- list(anneal = anneal, annealdeg = annealdeg,
+                          tol = tol, maxiter = maxiter, kurtsize = kurtsize)
+  if (any(vapply(scalar_controls, function(z) {
+    length(z) != 1L || !is.numeric(z) || !is.finite(z)
+  }, logical(1)))) {
+    stop("anneal, annealdeg, tol, maxiter, and kurtsize must be finite scalars.")
+  }
+  if (anneal <= 0 || anneal > 1 || annealdeg < 0 || tol < 0 ||
+      maxiter < 1 || maxiter != floor(maxiter) || kurtsize < 1 ||
+      kurtsize != floor(kurtsize)) {
+    stop("Invalid annealing, tolerance, iteration, or kurtosis parameters.")
+  }
+  if (!is.null(lrate) &&
+      (length(lrate) != 1L || !is.numeric(lrate) || !is.finite(lrate) ||
+       lrate <= 0)) {
+    stop("lrate must be a positive finite scalar.")
   }
 
   # Set blocksize if not provided
-  blocksize <- ifelse(is.null(blocksize), ceiling(min(5 * log(nrow(x)), 0.3 * nrow(x))), blocksize)
+  blocksize <- ifelse(is.null(blocksize),
+                      max(1L, ceiling(min(5 * log(nrow(x)), 0.3 * nrow(x)))),
+                      blocksize)
+  if (length(blocksize) != 1L || !is.numeric(blocksize) ||
+      !is.finite(blocksize) || blocksize < 1 ||
+      blocksize != floor(blocksize) || blocksize > nrow(x)) {
+    stop("blocksize must be a positive integer no larger than nrow(x).")
+  }
 
   # Center the data if required
   if (centre) {
     x <- scale(x, scale = FALSE)
     if (verbose) message("Removing column means...")
+  }
+
+  # Check rank after centering, since centering can reduce the rank by one.
+  if (Matrix::rankMatrix(x) < if (is.null(pca)) ncol(x) else pca) {
+    stop("x does not have sufficient rank for the requested number of components.")
   }
 
   # Perform PCA if specified
@@ -326,8 +369,9 @@ ext_in <- function(x,
       change <- sum(delta * delta)
 
       if (iter > 2) {
-        angledelta <- acos(sum(delta * olddelta) /
-                             sqrt(change * oldchange))
+        cos_angle <- sum(delta * olddelta) / sqrt(change * oldchange)
+        cos_angle <- max(-1, min(1, cos_angle))
+        angledelta <- acos(cos_angle)
         angledelta <- degconst * angledelta
       }
 
@@ -378,11 +422,13 @@ ext_in <- function(x,
         stop("Infomax failed after repeated weight blowups.")
       }
       lrate <- lrate * restart_fac
-      message(paste("Weights blown up, lowering lrate to ",
-                    lrate))
+      if (verbose) {
+        message(paste("Weights blown up, lowering lrate to ", lrate))
+      }
       weights <- startweights
       oldweights <- startweights
       olddelta <- numeric(n_comps^2)
+      oldchange <- 0
       bias <- numeric(n_comps)
 
       extblocks <- 1
@@ -390,6 +436,7 @@ ext_in <- function(x,
       signs[1] <- -1
       signs_mat <- matrix(signs, n_comps, n_comps, byrow = TRUE)
       oldsigns <- numeric(n_comps)
+      old_kurt <- 0
       signcount <- 0
     }
 
