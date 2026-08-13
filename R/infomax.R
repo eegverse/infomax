@@ -119,22 +119,23 @@ run_infomax <- function(x,
   }
 
   # Set blocksize if not provided
-  blocksize <- ifelse(is.null(blocksize),
-                      max(1L, ceiling(min(5 * log(nrow(x)), 0.3 * nrow(x)))),
-                      blocksize)
+  if (is.null(blocksize)) {
+    blocksize <- max(1L, ceiling(min(5 * log(nrow(x)), 0.3 * nrow(x))))
+  }
+
   if (length(blocksize) != 1L || !is.numeric(blocksize) ||
       !is.finite(blocksize) || blocksize < 1 ||
       blocksize != floor(blocksize) || blocksize > nrow(x)) {
     stop("blocksize must be a positive integer no larger than nrow(x).")
   }
 
-  # Center the data if required
+  # Centre the data if required
   if (centre) {
     x <- scale(x, scale = FALSE)
     if (verbose) message("Removing column means...")
   }
 
-  # Check rank after centering, since centering can reduce the rank by one.
+  # Check rank after centreing, since centreing can reduce the rank by one.
   if (Matrix::rankMatrix(x) < if (is.null(pca)) ncol(x) else pca) {
     stop("x does not have sufficient rank for the requested number of components.")
   }
@@ -154,7 +155,9 @@ run_infomax <- function(x,
   }
 
   # Set initial learning rate if not provided
-  lrate <- ifelse(is.null(lrate), .01 / log(ncol(x)^2), lrate)
+  if (is.null(lrate)) {
+    .01 / log(ncol(x)^2)
+  } 
 
   # Whitening the data
   if (identical(whiten, "none")) {
